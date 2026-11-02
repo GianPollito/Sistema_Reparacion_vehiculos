@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 350" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="50%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0b3b60" />
+    </linearGradient>
+    <linearGradient id="redAccent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#e63946" />
+      <stop offset="100%" stop-color="#ff6b6b" />
+    </linearGradient>
+    <linearGradient id="cyanGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+  </defs>
+  <rect width="600" height="350" fill="url(#bgGrad)" />
+  <g opacity="0.12" stroke="#ffffff" stroke-width="1">
+    <line x1="0" y1="50" x2="600" y2="50" />
+    <line x1="0" y1="100" x2="600" y2="100" />
+    <line x1="0" y1="150" x2="600" y2="150" />
+    <line x1="0" y1="200" x2="600" y2="200" />
+    <line x1="0" y1="250" x2="600" y2="250" />
+    <line x1="0" y1="300" x2="600" y2="300" />
+    <line x1="100" y1="0" x2="100" y2="350" />
+    <line x1="200" y1="0" x2="200" y2="350" />
+    <line x1="300" y1="0" x2="300" y2="350" />
+    <line x1="400" y1="0" x2="400" y2="350" />
+    <line x1="500" y1="0" x2="500" y2="350" />
+  </g>
+  <path d="M70,230 C120,230 140,225 170,200 L240,140 C270,115 320,110 400,115 L460,150 C510,170 540,200 550,230 L550,250 C550,260 540,265 530,265 L485,265 C485,235 445,235 445,265 L195,265 C195,235 155,235 155,265 L80,265 C70,265 60,255 60,245 Z" fill="#ffffff" opacity="0.95" />
+  <path d="M245,145 L320,125 L395,125 L445,155 L380,155 L245,155 Z" fill="#0f172a" opacity="0.8" />
+  <path d="M90,228 L530,228 L525,236 L85,236 Z" fill="url(#redAccent)" />
+  <circle cx="175" cy="265" r="32" fill="#1e293b" stroke="#64748b" stroke-width="4" />
+  <circle cx="175" cy="265" r="18" fill="#e2e8f0" stroke="#0f172a" stroke-width="3" />
+  <circle cx="175" cy="265" r="7" fill="url(#redAccent)" />
+  <circle cx="465" cy="265" r="32" fill="#1e293b" stroke="#64748b" stroke-width="4" />
+  <circle cx="465" cy="265" r="18" fill="#e2e8f0" stroke="#0f172a" stroke-width="3" />
+  <circle cx="465" cy="265" r="7" fill="url(#redAccent)" />
+  <polygon points="545,210 595,190 595,245 545,225" fill="#fef08a" opacity="0.45" />
+  <g transform="translate(40, 38)">
+    <rect width="195" height="32" rx="8" fill="rgba(14, 165, 233, 0.2)" stroke="#38bdf8" stroke-width="1.5" />
+    <text x="14" y="21" font-family="'Segoe UI', -apple-system, sans-serif" font-weight="700" font-size="12" fill="#38bdf8">⚡ Taller Motor Express</text>
+  </g>
+</svg>

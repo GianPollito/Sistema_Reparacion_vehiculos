@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block title %}Equipo de Especialistas Técnicos | {{ APP_NAME }}{% endblock %}
+
+{% block breadcrumb %}
+    <span class="text-muted">Personal</span> / <span class="crumb-current">Equipo Técnico</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-corporate">
+    <div>
+        <h3>Equipo de Especialistas Técnicos</h3>
+        <p>Gestión de mecánicos certificados, especialidades automotrices y balanceo de carga en bahías.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="{% url 'orden_create' %}" class="btn btn-outline-dark fw-bold btn-sm rounded-3 px-3 py-2">
+            <i class="fas fa-clipboard-list me-1 text-primary"></i> Asignar a Bahía
+        </a>
+        <a href="{% url 'mecanico_create' %}" class="btn-topbar-cta">
+            <i class="fas fa-user-plus"></i>
+            <span>Nuevo Técnico</span>
+        </a>
+    </div>
+</div>
+
+<div class="filter-toolbar-enterprise d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <form method="GET" action="" class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 760px;" data-auto-filter>
+        <div class="topbar-search-box flex-grow-1" style="background: #f8fafc;">
+            <i class="fas fa-search text-muted"></i>
+            <input type="text" name="search" class="form-control border-0 p-0" placeholder="Buscar nombre o DNI…" value="{{ search }}" autocomplete="off">
+        </div>
+        <select name="especialidad" class="form-select border rounded-3 text-dark fw-semibold" style="width: auto; min-width: 236px;">
+            <option value="">Todas las Especialidades</option>
+            {% for esp in especialidades %}
+                <option value="{{ esp }}" {% if especialidad == esp %}selected{% endif %}>{{ esp }}</option>
+            {% endfor %}
+        </select>
+        {% if search or especialidad %}
+            <a href="{% url 'mecanico_list' %}" class="btn btn-light border px-3 py-2 rounded-3 text-nowrap" title="Limpiar filtro">
+                <i class="fas fa-times text-muted"></i>
+            </a>
+        {% endif %}
+    </form>
+
+    <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-light text-dark border px-3 py-2 fw-semibold">
+            <i class="fas fa-users-cog text-primary me-1"></i> {{ mecanicos|length }} Especialistas Calificados
+        </span>
+    </div>
+</div>
+
+<div class="row g-4">
+    {% for m in mecanicos %}
+        <div class="col-md-6 col-lg-3">
+            <div class="card-enterprise h-100 position-relative p-4 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="user-avatar-circle" style="width: 50px; height: 50px; font-size: 1.25rem; border-radius: 14px; background: linear-gradient(135deg, #1e293b, #090d16);">
+                        <i class="fas fa-wrench text-danger"></i>
+                    </div>
+                    {% if m.estado == 'Activo' %}
+                        <span class="badge-status badge-status-completed">Activo</span>
+                    {% else %}
+                        <span class="badge-status badge-status-cancelled">Inactivo</span>
+                    {% endif %}
+                </div>
+
+                <h6 class="fw-bold text-dark mb-0 fs-6">{{ m.nombre_completo }}</h6>
+                <small class="badge bg-light text-muted border font-monospace my-1" style="width: fit-content;">DNI: {{ m.dni }}</small>
+
+                <div class="my-2 p-2 bg-light rounded-3">
+                    <small class="text-muted d-block text-uppercase fw-bold" style="font-size:0.68rem; letter-spacing: 0.05em;">ESPECIALIDAD:</small>
+                    <span class="fw-semibold text-primary small d-block">
+                        <i class="fas fa-award me-1"></i> {{ m.especialidad }}
+                    </span>
+                </div>
+
+                <div class="small my-2 text-secondary">
+                    <div><i class="fas fa-phone-alt text-success me-1"></i> {{ m.telefono|default:'-' }}</div>
+                    <div><i class="fas fa-envelope text-primary me-1"></i> {{ m.email|default:'-' }}</div>
+                </div>
+
+                <div class="p-2 bg-light rounded-3 d-flex justify-content-between text-center my-3 border">
+                    <div>
+                        <small class="text-muted d-block" style="font-size:0.72rem;">Órdenes en Bahía</small>
+                        <strong class="text-danger fs-6">{{ m.ordenes_activas }}</strong>
+                    </div>
+                    <div class="border-start ps-3">
+                        <small class="text-muted d-block" style="font-size:0.72rem;">Total Atendidas</small>
+                        <strong class="text-dark fs-6">{{ m.total_ordenes }}</strong>
+                    </div>
+                </div>
+
+                <div class="mt-auto pt-3 border-top d-flex justify-content-end gap-2">
+                    <a href="{% url 'mecanico_update' m.pk %}" class="btn-action-ghost" title="Editar Especialista">
+                        <i class="fas fa-pencil-alt text-secondary"></i>
+                    </a>
+                    <a href="{% url 'mecanico_delete' m.pk %}" class="btn-action-ghost delete-btn" title="Eliminar" onclick="return confirmDelete('¿Confirma eliminar a este técnico del equipo?');">
+                        <i class="fas fa-trash-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <div class="card-enterprise text-center py-5 text-muted">
+                <i class="fas fa-user-slash fa-3x mb-3 text-secondary opacity-50"></i>
+                <h6 class="fw-bold text-dark">No se encontraron especialistas</h6>
+                <p class="small text-muted mb-3">No hay mecánicos registrados con los criterios seleccionados.</p>
+                <div>
+                    <a href="{% url 'mecanico_create' %}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">
+                        <i class="fas fa-plus me-1"></i> Registrar Especialista
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

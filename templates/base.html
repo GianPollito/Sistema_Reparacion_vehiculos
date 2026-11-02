@@ -1,0 +1,508 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0a0f1c">
+    <title>{% block title %}{{ APP_NAME }} • {{ APP_TAGLINE }}{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0f1c'/%3E%3Cpath d='M44.7 19.3a10.5 10.5 0 0 1-13 13L22 42a3.6 3.6 0 1 1-5.2-5.1l9.7-9.7a10.5 10.5 0 0 1 13-13l-6.3 6.3 4.9 4.9 6.6-6.1z' fill='%23f43f5e'/%3E%3C/svg%3E">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+<a href="#mainContent" class="skip-link">Saltar al contenido principal</a>
+
+<div class="app-container">
+    <aside class="app-sidebar" id="appSidebar" aria-label="Navegación principal">
+        <div class="sidebar-header">
+            <div class="brand-emblem-box">
+                <i class="fas fa-wrench"></i>
+            </div>
+            <div class="brand-title-wrap">
+                <h2>MOTOR EXPRESS</h2>
+                <span>Workshop Suite</span>
+            </div>
+        </div>
+
+        <div class="sidebar-pulse-box">
+            <div class="pulse-indicator">
+                <span class="dot"></span>
+                <span>TALLER ACTIVO</span>
+            </div>
+            <span class="badge font-monospace">8/12 BAHÍAS</span>
+        </div>
+
+        <nav class="sidebar-body">
+            <div class="nav-group-label">Principal</div>
+            <a href="{% url 'dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' or request.resolver_match.url_name == 'dashboard_alias' %}active{% endif %}">
+                <i class="fas fa-chart-pie"></i>
+                <span>Dashboard General</span>
+            </a>
+
+            <div class="nav-group-label">Operaciones de taller</div>
+            <a href="{% url 'orden_list' %}" class="sidebar-link {% if 'orden' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-clipboard-list"></i>
+                <span>Órdenes de Trabajo</span>
+                {% if SIDEBAR_ORDENES_ACTIVAS %}
+                    <span class="nav-pill-count">{{ SIDEBAR_ORDENES_ACTIVAS }}</span>
+                {% endif %}
+            </a>
+            <a href="{% url 'cita_list' %}" class="sidebar-link {% if 'cita' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-calendar-check"></i>
+                <span>Agenda de Citas</span>
+                {% if SIDEBAR_CITAS_PENDIENTES %}
+                    <span class="nav-pill-count">{{ SIDEBAR_CITAS_PENDIENTES }}</span>
+                {% endif %}
+            </a>
+            {% if user.is_superuser or user.perfil.rol != 'Recepcionista' %}
+            <a href="{% url 'diagnostico_list' %}" class="sidebar-link {% if 'diagnostico' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-stethoscope"></i>
+                <span>Diagnósticos OBD-II</span>
+            </a>
+            {% endif %}
+
+            <div class="nav-group-label">Flota &amp; clientes</div>
+            {% if user.is_superuser or user.perfil.rol != 'Mecanico' %}
+            <a href="{% url 'cliente_list' %}" class="sidebar-link {% if 'cliente' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-user-tie"></i>
+                <span>Directorio Clientes</span>
+            </a>
+            {% endif %}
+            <a href="{% url 'vehiculo_list' %}" class="sidebar-link {% if 'vehiculo' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-car-side"></i>
+                <span>Flota Vehicular</span>
+            </a>
+            {% if user.is_superuser or user.perfil.rol == 'Administrador' %}
+            <a href="{% url 'mecanico_list' %}" class="sidebar-link {% if 'mecanico' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-users-cog"></i>
+                <span>Equipo Técnico</span>
+            </a>
+            {% endif %}
+
+            <div class="nav-group-label">Almacén &amp; catálogo</div>
+            <a href="{% url 'repuesto_list' %}" class="sidebar-link {% if 'repuesto' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-boxes"></i>
+                <span>Repuestos &amp; Stock</span>
+                {% if SIDEBAR_REPUESTOS_BAJOS %}
+                    <span class="nav-pill-count" style="background: rgba(244,63,94,.2); border-color: rgba(251,113,133,.25); color:#fecdd3;">{{ SIDEBAR_REPUESTOS_BAJOS }}</span>
+                {% endif %}
+            </a>
+            {% if user.is_superuser or user.perfil.rol != 'Mecanico' %}
+            <a href="{% url 'servicio_list' %}" class="sidebar-link {% if 'servicio' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-tools"></i>
+                <span>Tarifario Servicios</span>
+            </a>
+            {% endif %}
+
+            {% if user.is_superuser or user.perfil.rol != 'Mecanico' %}
+            <div class="nav-group-label">Finanzas &amp; auditoría</div>
+            <a href="{% url 'pago_list' %}" class="sidebar-link {% if 'pago' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-cash-register"></i>
+                <span>Facturación &amp; Cobros</span>
+            </a>
+            {% if user.is_superuser or user.perfil.rol == 'Administrador' %}
+            <a href="{% url 'reportes_index' %}" class="sidebar-link {% if 'reporte' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fas fa-chart-line"></i>
+                <span>Informes Gerenciales</span>
+            </a>
+            {% endif %}
+            {% endif %}
+        </nav>
+
+        <div class="sidebar-footer">
+            {% if user.is_authenticated %}
+                <div class="user-sidebar-card">
+                    <div class="user-avatar-circle">
+                        {{ user.first_name|default:user.username|make_list|first|upper }}
+                    </div>
+                    <div class="user-sidebar-info">
+                        <span class="user-name" title="{{ user.get_full_name|default:user.username }}">
+                            {{ user.get_full_name|default:user.username }}
+                        </span>
+                        <span class="user-role">{{ user.perfil.rol|default:'Administrador' }}</span>
+                    </div>
+                    <a href="{% url 'logout' %}" class="logout-action-btn" title="Cerrar sesión segura" aria-label="Cerrar sesión">
+                        <i class="fas fa-arrow-right-from-bracket"></i>
+                    </a>
+                </div>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-outline-light w-100 btn-sm rounded-3 fw-bold">
+                    <i class="fas fa-lock me-1"></i> Iniciar Sesión
+                </a>
+            {% endif %}
+        </div>
+    </aside>
+
+    <div class="sidebar-backdrop d-none" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+
+    <div class="app-main">
+        <header class="app-topbar">
+            <div class="d-flex align-items-center gap-2 gap-lg-3 min-w-0">
+                <button class="btn-icon-topbar d-lg-none" type="button" onclick="toggleSidebar()" aria-label="Abrir menú" aria-controls="appSidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+
+                <nav class="topbar-breadcrumbs" aria-label="Ubicación">
+                    <a href="{% url 'dashboard' %}" aria-label="Inicio">
+                        <i class="fas fa-house"></i>
+                    </a>
+                    <span class="crumb-sep">/</span>
+                    {% block breadcrumb %}<span class="crumb-current">Panel de Control</span>{% endblock %}
+                </nav>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <form method="GET" action="{% url 'cliente_list' %}" class="d-none d-xl-flex m-0" role="search">
+                    <label class="topbar-search-box mb-0" for="globalSearch">
+                        <i class="fas fa-magnifying-glass"></i>
+                        <input type="text" id="globalSearch" name="search" placeholder="Buscar cliente o DNI…" autocomplete="off">
+                        <span class="kbd-shortcut">/</span>
+                    </label>
+                </form>
+
+                <span class="topbar-date-chip d-none d-lg-inline-flex">
+                    <i class="fas fa-calendar-day"></i>
+                    <span id="topbarDate">Hoy</span>
+                </span>
+
+                <div class="dropdown">
+                    <button class="btn-icon-topbar" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notificaciones">
+                        <i class="far fa-bell"></i>
+                        <span class="notif-dot"></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end mt-2" style="width: 320px;">
+                        <li class="d-flex justify-content-between align-items-center px-2 pt-1 pb-2">
+                            <span class="fw-bold small" style="color:var(--ink-900);">Avisos operativos</span>
+                            <span class="badge" style="background:#fff1f2;color:#be123c;border:1px solid #fecdd3;">3 nuevas</span>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item p-2" href="{% url 'orden_list' %}">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="d-grid place-items-center rounded-3" style="width:34px;height:34px;display:grid;place-items:center;background:#eff6ff;color:#2563eb;"><i class="fas fa-screwdriver-wrench"></i></span>
+                                    <span>
+                                        <strong class="d-block" style="font-size:.78rem;color:var(--ink-900);">Orden lista para entrega</strong>
+                                        <small class="text-muted" style="font-size:.68rem;">Notificación de bahía · hace 12 min</small>
+                                    </span>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item p-2" href="{% url 'repuesto_list' %}?bajo_stock=1">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="d-grid place-items-center rounded-3" style="width:34px;height:34px;display:grid;place-items:center;background:#fffbeb;color:#d97706;"><i class="fas fa-triangle-exclamation"></i></span>
+                                    <span>
+                                        <strong class="d-block" style="font-size:.78rem;color:var(--ink-900);">Stock mínimo alcanzado</strong>
+                                        <small class="text-muted" style="font-size:.68rem;">Pastillas de freno críticas</small>
+                                    </span>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item p-2" href="{% url 'cita_list' %}">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="d-grid place-items-center rounded-3" style="width:34px;height:34px;display:grid;place-items:center;background:#ecfdf5;color:#059669;"><i class="fas fa-calendar-check"></i></span>
+                                    <span>
+                                        <strong class="d-block" style="font-size:.78rem;color:var(--ink-900);">Cita confirmada</strong>
+                                        <small class="text-muted" style="font-size:.68rem;">Nuevo ingreso programado para hoy</small>
+                                    </span>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <button class="btn-icon-topbar" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasQuickActions" aria-label="Acciones rápidas">
+                    <i class="fas fa-bolt" style="color:#f59e0b;"></i>
+                </button>
+
+                {% if not user.is_authenticated %}
+                <a href="{% url 'login' %}" class="btn-primary-action">
+                    <i class="fas fa-lock"></i> Iniciar sesión
+                </a>
+                {% endif %}
+            </div>
+        </header>
+
+        <main class="app-content" id="mainContent">
+            {% if messages %}
+                {% for msg in messages %}
+                    <div class="alert alert-{% if msg.tags == 'error' %}danger{% else %}{{ msg.tags }}{% endif %} alert-dismissible fade show d-flex align-items-center gap-3 mb-4" role="alert">
+                        {% if msg.tags == 'success' %}
+                            <i class="fas fa-circle-check fs-5"></i>
+                        {% elif msg.tags == 'error' or msg.tags == 'danger' %}
+                            <i class="fas fa-circle-exclamation fs-5"></i>
+                        {% elif msg.tags == 'warning' %}
+                            <i class="fas fa-triangle-exclamation fs-5"></i>
+                        {% else %}
+                            <i class="fas fa-circle-info fs-5"></i>
+                        {% endif %}
+                        <div class="fw-semibold">{{ msg }}</div>
+                        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="app-footer">
+            <div>
+                &copy; 2026 {{ APP_NAME }} Automotive Systems. Todos los derechos reservados.
+            </div>
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <span class="footer-status">Sistemas operativos</span>
+                <span class="badge bg-white text-muted border px-2 py-1 font-monospace" style="font-size: 0.66rem;">
+                    Enterprise Suite v4.0
+                </span>
+                <span class="text-muted" style="font-size: 0.7rem;">
+                    <i class="fas fa-shield-halved me-1 text-success"></i> Auditoría encriptada
+                </span>
+            </div>
+        </footer>
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end offcanvas-enterprise" tabindex="-1" id="offcanvasQuickActions" aria-labelledby="quickActionsLabel">
+    <div class="offcanvas-enterprise-header d-flex justify-content-between align-items-center">
+        <div>
+            <span class="text-uppercase fw-bold d-block mb-1" style="font-size:.58rem;letter-spacing:.16em;color:#fb7185;">Centro de acciones</span>
+            <h6 id="quickActionsLabel">ACCIONES RÁPIDAS</h6>
+            <small>Operaciones inmediatas de taller</small>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+    </div>
+
+    <div class="offcanvas-body p-4 d-flex flex-column justify-content-between">
+        <div>
+            <div class="text-uppercase fw-bold mb-3" style="font-size: 0.62rem; letter-spacing: 0.14em; color: #6b7c96;">
+                Creación directa
+            </div>
+            <div class="d-flex flex-column gap-2">
+                <a href="{% url 'orden_create' %}" class="quick-action-pill">
+                    <div class="icon-bubble" style="background:rgba(244,63,94,.14);color:#fb7185;">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold">Aperturar orden de trabajo</div>
+                        <small class="text-muted fw-normal">Ingreso de unidad a bahía</small>
+                    </div>
+                </a>
+
+                <a href="{% url 'cita_create' %}" class="quick-action-pill">
+                    <div class="icon-bubble" style="background:rgba(59,130,246,.14);color:#93c5fd;">
+                        <i class="fas fa-calendar-plus"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold">Agendar cita técnica</div>
+                        <small class="text-muted fw-normal">Reserva de turno</small>
+                    </div>
+                </a>
+
+                {% if user.is_superuser or user.perfil.rol != 'Mecanico' %}
+                <a href="{% url 'cliente_create' %}" class="quick-action-pill">
+                    <div class="icon-bubble" style="background:rgba(6,182,212,.14);color:#67e8f9;">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold">Registrar nuevo cliente</div>
+                        <small class="text-muted fw-normal">Particular o empresa</small>
+                    </div>
+                </a>
+                {% endif %}
+
+                {% if user.is_superuser or user.perfil.rol != 'Recepcionista' %}
+                <a href="{% url 'diagnostico_create' %}" class="quick-action-pill">
+                    <div class="icon-bubble" style="background:rgba(245,158,11,.14);color:#fcd34d;">
+                        <i class="fas fa-stethoscope"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold">Nuevo diagnóstico OBD-II</div>
+                        <small class="text-muted fw-normal">Lectura de fallas DTC</small>
+                    </div>
+                </a>
+                {% endif %}
+
+                <a href="{% url 'vehiculo_create' %}" class="quick-action-pill">
+                    <div class="icon-bubble" style="background:rgba(148,163,184,.14);color:#cbd5e1;">
+                        <i class="fas fa-car"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold">Vincular vehículo</div>
+                        <small class="text-muted fw-normal">Asignación de placa</small>
+                    </div>
+                </a>
+
+                {% if user.is_superuser or user.perfil.rol != 'Mecanico' %}
+                <a href="{% url 'pago_create' %}" class="quick-action-pill">
+                    <div class="icon-bubble" style="background:rgba(16,185,129,.14);color:#6ee7b7;">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold">Registrar cobro / pago</div>
+                        <small class="text-muted fw-normal">Emisión de boletas</small>
+                    </div>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if user.is_authenticated %}
+        <div class="pt-3 border-top border-secondary border-opacity-25">
+            <div class="d-flex align-items-center gap-2 mb-3 small" style="color:#8394af;">
+                <i class="fas fa-circle-info"></i>
+                <span>Los movimientos quedan registrados en la auditoría del sistema.</span>
+            </div>
+            <a href="{% url 'logout' %}" class="btn btn-outline-danger w-100 py-2 rounded-3 fw-bold small">
+                <i class="fas fa-power-off me-2"></i> Cerrar sesión
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+function toggleSidebar() {
+    const sidebar = document.getElementById('appSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    if (!sidebar || !backdrop) return;
+
+    const isOpen = sidebar.classList.toggle('show');
+    backdrop.classList.toggle('d-none', !isOpen);
+    backdrop.classList.toggle('show', isOpen);
+    document.body.classList.toggle('sidebar-open', isOpen);
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+}
+
+function confirmDelete(msg = '¿Está seguro de confirmar esta acción?') {
+    return confirm(msg);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const dateEl = document.getElementById('topbarDate');
+    if (dateEl) {
+        try {
+            const formatted = new Intl.DateTimeFormat('es-PE', {
+                weekday: 'short', day: '2-digit', month: 'short'
+            }).format(new Date());
+            dateEl.textContent = formatted.charAt(0).toUpperCase() + formatted.slice(1).replace('.', '');
+        } catch (e) {
+            dateEl.textContent = new Date().toLocaleDateString();
+        }
+    }
+
+    const globalSearch = document.getElementById('globalSearch');
+    if (globalSearch) {
+        document.addEventListener('keydown', function (event) {
+            const tag = (document.activeElement && document.activeElement.tagName) || '';
+            const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(tag);
+            if (event.key === '/' && !isTyping) {
+                event.preventDefault();
+                globalSearch.focus();
+            }
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+                event.preventDefault();
+                globalSearch.focus();
+            }
+        });
+    }
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && document.body.classList.contains('sidebar-open')) {
+            toggleSidebar();
+        }
+    });
+
+    document.querySelectorAll('.app-sidebar .sidebar-link').forEach(function (link) {
+        link.addEventListener('click', function () {
+            if (window.innerWidth < 992 && document.body.classList.contains('sidebar-open')) {
+                toggleSidebar();
+            }
+        });
+    });
+
+    const FOCUS_KEY = 'mx:autofilter-focus';
+
+    try {
+        const saved = JSON.parse(sessionStorage.getItem(FOCUS_KEY) || 'null');
+        sessionStorage.removeItem(FOCUS_KEY);
+        if (saved && saved.path === window.location.pathname) {
+            const field = document.querySelector('[data-auto-filter] [name="' + saved.name + '"]');
+            if (field && typeof field.focus === 'function') {
+                field.focus({ preventScroll: true });
+                if (typeof field.setSelectionRange === 'function' && typeof field.value === 'string') {
+                    const end = field.value.length;
+                    try { field.setSelectionRange(end, end); } catch (e) { /* noop */ }
+                }
+            }
+        }
+    } catch (e) { /* almacenamiento no disponible */ }
+
+    document.querySelectorAll('form[data-auto-filter]').forEach(function (form) {
+        let debounceTimer = null;
+        let lastSubmitted = new URLSearchParams(new FormData(form)).toString();
+        let submitting = false;
+
+        function submitForm(field) {
+            if (submitting) return;
+            submitting = true;
+            clearTimeout(debounceTimer);
+            if (field && field.name) {
+                try {
+                    sessionStorage.setItem(FOCUS_KEY, JSON.stringify({
+                        path: window.location.pathname,
+                        name: field.name
+                    }));
+                } catch (e) { /* noop */ }
+            }
+            form.classList.add('is-auto-filtering');
+            if (typeof form.requestSubmit === 'function') {
+                form.requestSubmit();
+            } else {
+                form.submit();
+            }
+        }
+
+        function currentState() {
+            return new URLSearchParams(new FormData(form)).toString();
+        }
+
+        form.addEventListener('change', function (event) {
+            if (event.target.matches('select, input[type="date"], input[type="checkbox"], input[type="radio"]')) {
+                submitForm(event.target);
+            }
+        });
+
+        form.addEventListener('input', function (event) {
+            const field = event.target;
+            if (!field.matches('input[type="text"], input[type="search"]')) return;
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(function () {
+                if (currentState() !== lastSubmitted) {
+                    lastSubmitted = currentState();
+                    submitForm(field);
+                }
+            }, 480);
+        });
+
+        form.addEventListener('submit', function () {
+            submitting = true;
+            form.classList.add('is-auto-filtering');
+        });
+    });
+});
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

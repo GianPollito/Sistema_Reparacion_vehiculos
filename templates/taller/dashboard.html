@@ -1,0 +1,611 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Centro de Control | {{ APP_NAME }}{% endblock %}
+
+{% block breadcrumb %}
+    <span class="crumb-current">Panel de Control &amp; Central Operativa</span>
+{% endblock %}
+
+{% block content %}
+<section class="hero-banner">
+    <div class="row g-4 align-items-center">
+        <div class="col-lg-7">
+            <div class="hero-content">
+                <span class="hero-eyebrow">
+                    <i class="fas fa-circle" style="font-size:.42rem;"></i>
+                    {% now "l, d \d\e F \d\e Y" %}
+                </span>
+                <h1 class="hero-title">
+                    Buen día, <span class="accent">{{ user.first_name|default:user.username }}</span>.
+                </h1>
+                <p class="hero-sub">
+                    Tu centro de control está listo. Supervisa en tiempo real las recepciones técnicas,
+                    el flujo de bahías, la carga del equipo y la facturación del taller.
+                </p>
+                <div class="hero-actions">
+                    {% if user.perfil.rol == 'Mecanico' %}
+                        <a href="{% url 'diagnostico_create' %}" class="btn-ghost-light">
+                            <i class="fas fa-stethoscope"></i> Diagnóstico OBD-II
+                        </a>
+                        <a href="{% url 'orden_list' %}" class="btn-primary-action">
+                            <i class="fas fa-clipboard-list"></i> Órdenes en bahía
+                        </a>
+                    {% elif user.perfil.rol == 'Recepcionista' %}
+                        <a href="{% url 'cliente_create' %}" class="btn-ghost-light">
+                            <i class="fas fa-user-plus"></i> Nuevo cliente
+                        </a>
+                        <a href="{% url 'cita_create' %}" class="btn-primary-action">
+                            <i class="fas fa-calendar-plus"></i> Agendar cita
+                        </a>
+                    {% else %}
+                        <a href="{% url 'cita_create' %}" class="btn-ghost-light">
+                            <i class="fas fa-calendar-plus"></i> Agendar cita
+                        </a>
+                        <a href="{% url 'orden_create' %}" class="btn-primary-action">
+                            <i class="fas fa-plus"></i> Nueva orden de trabajo
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="hero-aside">
+                <div class="hero-car-frame">
+                    <img src="{% static 'img/banners/hero-car.svg' %}" alt="Unidad vehicular en servicio Motor Express">
+                </div>
+                <div class="hero-live-chip">
+                    <span class="live-left">
+                        <span class="live-dot"></span>
+                        Operación en vivo
+                    </span>
+                    <span><strong>{{ total_ordenes_activas }}</strong> órdenes activas &nbsp;·&nbsp; <strong>8/12</strong> bahías</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="row g-3 g-xl-4 mb-4 kpi-row">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-widget">
+            <div class="stat-header">
+                <span class="stat-label">Órdenes activas</span>
+                <div class="stat-icon-box bg-primary-subtle">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+            </div>
+            <div class="stat-number">{{ total_ordenes_activas }}</div>
+            <div class="stat-footer">
+                <span class="stat-badge stat-badge-blue"><i class="fas fa-arrow-trend-up"></i> En servicio</span>
+                <span>Distribuidas en bahías</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-widget">
+            <div class="stat-header">
+                <span class="stat-label">Flota vehicular</span>
+                <div class="stat-icon-box bg-info-subtle">
+                    <i class="fas fa-car-side"></i>
+                </div>
+            </div>
+            <div class="stat-number">{{ total_vehiculos }}</div>
+            <div class="stat-footer">
+                <span class="stat-badge stat-badge-green"><i class="fas fa-circle-check"></i> Verificadas</span>
+                <span>Unidades en padrón</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-widget">
+            <div class="stat-header">
+                <span class="stat-label">Clientes activos</span>
+                <div class="stat-icon-box" style="background: linear-gradient(145deg,#f5f3ff,#ede9fe);color:#7c3aed;border-color:rgba(124,58,237,.08);">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+            </div>
+            <div class="stat-number">{{ total_clientes }}</div>
+            <div class="stat-footer">
+                <span class="stat-badge stat-badge-purple"><i class="fas fa-briefcase"></i> B2C &amp; B2B</span>
+                <span>Particulares y flotas</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-widget">
+            {% if user.perfil.rol == 'Mecanico' %}
+                <div class="stat-header">
+                    <span class="stat-label">Diagnósticos OBD-II</span>
+                    <div class="stat-icon-box bg-warning-subtle">
+                        <i class="fas fa-stethoscope"></i>
+                    </div>
+                </div>
+                <div class="stat-number">{{ total_diagnosticos }}</div>
+                <div class="stat-footer">
+                    <span class="stat-badge stat-badge-amber"><i class="fas fa-wave-square"></i> Escaneos</span>
+                    <span>Intervenciones registradas</span>
+                </div>
+            {% else %}
+                <div class="stat-header">
+                    <span class="stat-label">Recaudación total</span>
+                    <div class="stat-icon-box bg-success-subtle">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                </div>
+                <div class="stat-number">S/ {{ total_ingresos|floatformat:2 }}</div>
+                <div class="stat-footer">
+                    <span class="stat-badge stat-badge-green"><i class="fas fa-check-double"></i> Conciliado</span>
+                    <span>Pagos liquidados en caja</span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-xl-8">
+        <div class="card-table-unified h-100">
+            <div class="card-table-toolbar">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="d-grid" style="place-items:center;width:32px;height:32px;border-radius:9px;background:#eff6ff;color:#2563eb;">
+                        <i class="fas fa-clipboard-list"></i>
+                    </span>
+                    <div>
+                        <strong class="d-block" style="font-size:.9rem;">Órdenes recientes en taller</strong>
+                        <small class="text-muted" style="font-size:.7rem;">Últimos ingresos y estado de reparación</small>
+                    </div>
+                </div>
+                <a href="{% url 'orden_list' %}" class="small fw-bold text-decoration-none" style="color:var(--blue);">
+                    Ver todas <i class="fas fa-arrow-right ms-1" style="font-size:.7rem;"></i>
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table-enterprise">
+                    <thead>
+                        <tr>
+                            <th>N° Orden</th>
+                            <th>Vehículo</th>
+                            <th>Cliente</th>
+                            <th>Técnico</th>
+                            <th>Estado</th>
+                            <th class="text-end">Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for o in ordenes_recientes %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'orden_detail' o.pk %}" class="font-monospace fw-bold text-decoration-none" style="color:var(--blue);">
+                                        {{ o.numero_orden }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="plate-badge">
+                                        <span class="plate-country">PE</span>
+                                        <span class="plate-number">{{ o.vehiculo.placa }}</span>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold" style="color:var(--ink-900);">{{ o.cliente.nombre_completo }}</div>
+                                    <small class="text-muted" style="font-size:.66rem;">{{ o.vehiculo.marca }} {{ o.vehiculo.modelo }}</small>
+                                </td>
+                                <td>
+                                    <small class="text-secondary">{{ o.mecanico.nombre_completo|default:'Por asignar' }}</small>
+                                </td>
+                                <td>
+                                    {% if o.estado == 'En Proceso' %}
+                                        <span class="badge-status badge-status-progress">En Proceso</span>
+                                    {% elif o.estado == 'En Diagnóstico' %}
+                                        <span class="badge-status badge-status-diagnostico">En Diagnóstico</span>
+                                    {% elif o.estado == 'Pendiente' %}
+                                        <span class="badge-status badge-status-pending">Pendiente</span>
+                                    {% elif o.estado == 'Esperando Repuestos' %}
+                                        <span class="badge-status badge-status-waiting">Repuestos</span>
+                                    {% elif o.estado == 'Finalizado' %}
+                                        <span class="badge-status badge-status-completed">Finalizado</span>
+                                    {% else %}
+                                        <span class="badge-status badge-status-delivered">Entregado</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <strong style="color:var(--ink-900);font-variant-numeric:tabular-nums;">S/ {{ o.costo_total|floatformat:2 }}</strong>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6">
+                                    <div class="empty-state">
+                                        <div class="empty-icon"><i class="fas fa-clipboard-list"></i></div>
+                                        <h6>No hay órdenes activas</h6>
+                                        <p class="mb-0">Apertura una nueva orden de trabajo para comenzar.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4 d-flex flex-column gap-4">
+        <div class="card-enterprise p-4">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <span class="stat-label d-block mb-1">Capacidad de bahías</span>
+                    <div class="d-flex align-items-baseline gap-2">
+                        <span style="font-size:1.65rem;font-weight:800;letter-spacing:-.04em;color:var(--ink-900);">8</span>
+                        <span class="text-muted" style="font-size:.78rem;">/ 12 activas</span>
+                    </div>
+                </div>
+                <span class="badge-status badge-status-completed">En línea</span>
+            </div>
+
+            <div class="bay-grid" aria-label="Ocupación de bahías">
+                <span class="bay-slot occupied" title="Bahía 1 · ocupada"></span>
+                <span class="bay-slot occupied" title="Bahía 2 · ocupada"></span>
+                <span class="bay-slot occupied" title="Bahía 3 · ocupada"></span>
+                <span class="bay-slot occupied" title="Bahía 4 · ocupada"></span>
+                <span class="bay-slot occupied" title="Bahía 5 · ocupada"></span>
+                <span class="bay-slot occupied" title="Bahía 6 · ocupada"></span>
+                <span class="bay-slot occupied" title="Bahía 7 · ocupada"></span>
+                <span class="bay-slot occupied" title="Bahía 8 · ocupada"></span>
+                <span class="bay-slot free" title="Bahía 9 · libre"></span>
+                <span class="bay-slot free" title="Bahía 10 · libre"></span>
+                <span class="bay-slot free" title="Bahía 11 · libre"></span>
+                <span class="bay-slot free" title="Bahía 12 · libre"></span>
+            </div>
+
+            <div class="bay-legend">
+                <span><i class="lg-busy"></i> Ocupada</span>
+                <span><i class="lg-free"></i> Disponible</span>
+                <span class="ms-auto fw-bold" style="color:#047857;">4 libres</span>
+            </div>
+        </div>
+
+        <div class="card-enterprise p-4 flex-grow-1">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <span class="stat-label d-block mb-1">Agenda del día</span>
+                    <small class="text-muted" style="font-size:.7rem;">Citas programadas y en atención</small>
+                </div>
+                <a href="{% url 'cita_list' %}" class="text-decoration-none" style="font-size:.72rem;font-weight:700;color:var(--blue);">Ver todas</a>
+            </div>
+
+            <div class="agenda-list">
+                {% for c in citas_proximas %}
+                    <div class="agenda-item">
+                        <span class="agenda-time">{{ c.hora_cita|time:"H:i" }}</span>
+                        <div class="agenda-main">
+                            <div class="a-title text-truncate">{{ c.cliente.nombre_completo }}</div>
+                            <div class="a-sub d-flex align-items-center gap-2">
+                                <span class="plate-badge" style="transform:scale(.82);transform-origin:left center;">
+                                    <span class="plate-country">PE</span>
+                                    <span class="plate-number">{{ c.vehiculo.placa }}</span>
+                                </span>
+                                <span class="text-truncate">{{ c.motivo|truncatechars:26 }}</span>
+                            </div>
+                        </div>
+                        <span class="badge-status badge-status-progress" style="font-size:.6rem;">{{ c.estado }}</span>
+                    </div>
+                {% empty %}
+                    <div class="empty-state py-4">
+                        <div class="empty-icon" style="width:46px;height:46px;font-size:1.05rem;"><i class="fas fa-calendar-day"></i></div>
+                        <h6 class="mb-1" style="font-size:.82rem;">Sin citas para hoy</h6>
+                        <p class="mb-0">La agenda del día está despejada.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="section-heading">
+    <div>
+        <h5>Especialidades operativas de taller</h5>
+        <small>Líneas de servicio certificadas y mantenimiento preventivo / correctivo</small>
+    </div>
+    <a href="{% url 'servicio_list' %}">Ver tarifario completo <i class="fas fa-arrow-right ms-1" style="font-size:.65rem;"></i></a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <a href="{% url 'servicio_list' %}" class="specialty-card text-decoration-none">
+            <span class="specialty-thumb"><img src="{% static 'img/banners/engine.svg' %}" alt="Motor e inyección"></span>
+            <span class="specialty-content">
+                <h6>Motor &amp; Inyección</h6>
+                <p>Afinamiento, sensores e inyectores.</p>
+            </span>
+            <i class="fas fa-arrow-right specialty-arrow"></i>
+        </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <a href="{% url 'servicio_list' %}" class="specialty-card text-decoration-none">
+            <span class="specialty-thumb"><img src="{% static 'img/banners/brakes.svg' %}" alt="Frenos y suspensión"></span>
+            <span class="specialty-content">
+                <h6>Frenos &amp; Suspensión</h6>
+                <p>Discos ABS, amortiguadores y dirección.</p>
+            </span>
+            <i class="fas fa-arrow-right specialty-arrow"></i>
+        </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <a href="{% url 'servicio_list' %}" class="specialty-card text-decoration-none">
+            <span class="specialty-thumb"><img src="{% static 'img/banners/electric.svg' %}" alt="Escaneo OBD-II"></span>
+            <span class="specialty-content">
+                <h6>Escaneo OBD-II</h6>
+                <p>Diagnóstico DTC, módulos ECU y red CAN.</p>
+            </span>
+            <i class="fas fa-arrow-right specialty-arrow"></i>
+        </a>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <a href="{% url 'servicio_list' %}" class="specialty-card text-decoration-none">
+            <span class="specialty-thumb"><img src="{% static 'img/banners/oil.svg' %}" alt="Mantenimiento preventivo"></span>
+            <span class="specialty-content">
+                <h6>Mantenimiento 30 pts</h6>
+                <p>Fluidos sintéticos, filtros y revisión.</p>
+            </span>
+            <i class="fas fa-arrow-right specialty-arrow"></i>
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-2">
+    {% if user.is_superuser or user.perfil.rol != 'Mecanico' %}
+    <div class="col-lg-6">
+        <div class="card-enterprise h-100 p-4">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                    <h6 class="fw-bold mb-1" style="color:var(--ink-900);">Distribución de ingresos por canal</h6>
+                    <small class="text-muted" style="font-size:.7rem;">Proporción de pagos completados en caja</small>
+                </div>
+                {% if user.is_superuser or user.perfil.rol == 'Administrador' %}
+                    <a href="{% url 'reporte_ingresos' %}" class="text-decoration-none" style="font-size:.72rem;font-weight:700;color:var(--blue);">Auditoría <i class="fas fa-arrow-right ms-1" style="font-size:.65rem;"></i></a>
+                {% endif %}
+            </div>
+            <div class="chart-wrap d-flex align-items-center justify-content-center">
+                <canvas id="dashboardChartPagos" style="max-height: 250px;"></canvas>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="{% if user.perfil.rol == 'Mecanico' %}col-12{% else %}col-lg-6{% endif %}">
+        <div class="card-enterprise h-100 p-4">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                    <h6 class="fw-bold mb-1" style="color:var(--ink-900);">Flujo operativo de órdenes</h6>
+                    <small class="text-muted" style="font-size:.7rem;">Carga operativa distribuida por fase en taller</small>
+                </div>
+                <a href="{% url 'orden_list' %}" class="text-decoration-none" style="font-size:.72rem;font-weight:700;color:var(--blue);">Ver órdenes <i class="fas fa-arrow-right ms-1" style="font-size:.65rem;"></i></a>
+            </div>
+            <div class="chart-wrap d-flex align-items-center justify-content-center">
+                <canvas id="dashboardChartEstados" style="max-height: 250px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (typeof Chart === 'undefined') return;
+
+    Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+    Chart.defaults.font.size = 11;
+    Chart.defaults.color = '#64748b';
+
+    const tooltipStyle = {
+        backgroundColor: 'rgba(10, 15, 28, 0.95)',
+        borderColor: 'rgba(255, 255, 255, 0.08)',
+        borderWidth: 1,
+        padding: 12,
+        cornerRadius: 10,
+        displayColors: false,
+        titleFont: { size: 11, weight: '700' },
+        bodyFont: { size: 11, weight: '500' },
+        titleMarginBottom: 6
+    };
+
+    const centerTotalPlugin = {
+        id: 'mxCenterTotal',
+        afterDraw: function (chart) {
+            if (chart.config.type !== 'doughnut') return;
+            const meta = chart.getDatasetMeta(0);
+            if (!meta || !meta.data.length) return;
+            const arc = meta.data[0];
+            const total = (chart.data.datasets[0].data || []).reduce(function (a, b) {
+                return a + Number(b || 0);
+            }, 0);
+            const formatted = new Intl.NumberFormat('es-PE', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(total);
+
+            const ctx = chart.ctx;
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            ctx.fillStyle = '#0a0f1c';
+            ctx.font = "800 17px 'Plus Jakarta Sans', sans-serif";
+            ctx.fillText('S/ ' + formatted, arc.x, arc.y - 9);
+
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = "700 8.5px 'Plus Jakarta Sans', sans-serif";
+            try { ctx.letterSpacing = '0.14em'; } catch (e) { /* noop */ }
+            ctx.fillText('RECAUDADO', arc.x, arc.y + 10);
+            try { ctx.letterSpacing = '0px'; } catch (e) { /* noop */ }
+            ctx.restore();
+        }
+    };
+
+    const barValuesPlugin = {
+        id: 'mxBarValues',
+        afterDatasetsDraw: function (chart) {
+            if (chart.config.type !== 'bar') return;
+            const meta = chart.getDatasetMeta(0);
+            if (!meta || !meta.data.length) return;
+            const ctx = chart.ctx;
+            ctx.save();
+            ctx.font = "800 10px 'Plus Jakarta Sans', sans-serif";
+            ctx.fillStyle = '#475569';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            meta.data.forEach(function (bar, index) {
+                const value = chart.data.datasets[0].data[index];
+                if (Number(value) > 0) {
+                    ctx.fillText(value, bar.x + 8, bar.y);
+                }
+            });
+            ctx.restore();
+        }
+    };
+
+    Chart.register(centerTotalPlugin, barValuesPlugin);
+
+    const ctxPagos = document.getElementById('dashboardChartPagos');
+    if (ctxPagos) {
+        const pagosData = {{ metodos_data|safe }};
+        new Chart(ctxPagos, {
+            type: 'doughnut',
+            data: {
+                labels: {{ metodos_labels|safe }},
+                datasets: [{
+                    data: pagosData,
+                    backgroundColor: ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#06b6d4'],
+                    hoverBackgroundColor: ['#059669', '#2563eb', '#7c3aed', '#d97706', '#0891b2'],
+                    borderWidth: 3,
+                    borderColor: '#ffffff',
+                    borderRadius: 7,
+                    spacing: 2,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '72%',
+                radius: '94%',
+                layout: { padding: 6 },
+                animation: { animateRotate: true, duration: 900 },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 8,
+                            boxHeight: 8,
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            padding: 14,
+                            font: { size: 10.5, weight: '600' }
+                        }
+                    },
+                    tooltip: Object.assign({}, tooltipStyle, {
+                        callbacks: {
+                            label: function (context) {
+                                const total = context.dataset.data.reduce(function (a, b) {
+                                    return a + Number(b || 0);
+                                }, 0) || 1;
+                                const pct = Math.round((Number(context.raw) / total) * 100);
+                                const amount = new Intl.NumberFormat('es-PE', {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2
+                                }).format(Number(context.raw));
+                                return ' ' + context.label + ' · S/ ' + amount + '  (' + pct + '%)';
+                            }
+                        }
+                    })
+                }
+            }
+        });
+    }
+
+    const ctxEstados = document.getElementById('dashboardChartEstados');
+    if (ctxEstados) {
+        const palette = [
+            ['#bfdbfe', '#2563eb'],
+            ['#ddd6fe', '#7c3aed'],
+            ['#fde68a', '#d97706'],
+            ['#fecdd3', '#e11d48'],
+            ['#a7f3d0', '#059669'],
+            ['#a5f3fc', '#0891b2']
+        ];
+
+        new Chart(ctxEstados, {
+            type: 'bar',
+            data: {
+                labels: {{ estados_labels|safe }},
+                datasets: [{
+                    label: 'Órdenes',
+                    data: {{ estados_data|safe }},
+                    backgroundColor: function (context) {
+                        const chart = context.chart;
+                        const area = chart.chartArea;
+                        const pair = palette[context.dataIndex % palette.length];
+                        if (!area) return pair[1];
+                        const gradient = chart.ctx.createLinearGradient(area.left, 0, area.right, 0);
+                        gradient.addColorStop(0, pair[0]);
+                        gradient.addColorStop(1, pair[1]);
+                        return gradient;
+                    },
+                    hoverBackgroundColor: function (context) {
+                        return palette[context.dataIndex % palette.length][1];
+                    },
+                    borderRadius: 8,
+                    borderSkipped: false,
+                    barThickness: 15,
+                    maxBarThickness: 18
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: { padding: { right: 26, top: 2, bottom: 2 } },
+                animation: { duration: 900, easing: 'easeOutQuart' },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: Object.assign({}, tooltipStyle, {
+                        callbacks: {
+                            label: function (context) {
+                                const n = Number(context.raw);
+                                return ' ' + n + (n === 1 ? ' orden en esta fase' : ' órdenes en esta fase');
+                            }
+                        }
+                    })
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        border: { display: false },
+                        grid: { color: '#eef2f8', borderDash: [4, 4], drawTicks: false },
+                        ticks: { precision: 0, stepSize: 1, font: { size: 10 }, padding: 6 }
+                    },
+                    y: {
+                        border: { display: false },
+                        grid: { display: false },
+                        ticks: {
+                            font: { size: 10, weight: '600' },
+                            color: '#475569',
+                            padding: 8,
+                            callback: function (value) {
+                                const label = this.getLabelForValue(value);
+                                return label.length > 17 ? label.slice(0, 16) + '…' : label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,440 @@
+{% extends 'base.html' %}
+
+{% block title %}Ficha de Orden: {{ orden.numero_orden }} | {{ APP_NAME }}{% endblock %}
+
+{% block breadcrumb %}
+    <a href="{% url 'orden_list' %}" class="text-decoration-none text-muted">Órdenes</a> / <span class="crumb-current">{{ orden.numero_orden }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-corporate">
+    <div>
+        <div class="d-flex align-items-center gap-3">
+            <h3 class="mb-0">Orden: {{ orden.numero_orden }}</h3>
+            {% if orden.estado == 'En Proceso' %}
+                <span class="badge-status badge-status-progress fs-6">En Proceso</span>
+            {% elif orden.estado == 'En Diagnóstico' %}
+                <span class="badge-status badge-status-diagnostico fs-6">En Diagnóstico</span>
+            {% elif orden.estado == 'Pendiente' %}
+                <span class="badge-status badge-status-pending fs-6">Pendiente</span>
+            {% elif orden.estado == 'Esperando Repuestos' %}
+                <span class="badge-status badge-status-waiting fs-6">Esperando Repuestos</span>
+            {% elif orden.estado == 'Finalizado' %}
+                <span class="badge-status badge-status-completed fs-6">Finalizado</span>
+            {% elif orden.estado == 'Entregado' %}
+                <span class="badge-status badge-status-delivered fs-6">Entregado</span>
+            {% else %}
+                <span class="badge-status badge-status-cancelled fs-6">Cancelado</span>
+            {% endif %}
+        </div>
+        <p class="text-muted small mb-0 mt-1">Recepción: {{ orden.fecha_ingreso|date:"d/m/Y H:i" }} hrs | Entrega Estimada: {{ orden.fecha_estimada_entrega|date:"d/m/Y H:i"|default:"Por definir" }}</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="{% url 'orden_imprimir' orden.pk %}" target="_blank" class="btn btn-outline-dark fw-bold btn-sm rounded-3 px-3 py-2">
+            <i class="fas fa-print me-1"></i> Imprimir Ficha
+        </a>
+        <a href="{% url 'pago_create' %}?orden_id={{ orden.pk }}" class="btn-topbar-cta">
+            <i class="fas fa-cash-register"></i>
+            <span>Registrar Cobro</span>
+        </a>
+        <a href="{% url 'orden_update' orden.pk %}" class="btn btn-outline-primary fw-bold btn-sm rounded-3 px-3 py-2">
+            <i class="fas fa-edit me-1"></i> Editar
+        </a>
+        <a href="{% url 'orden_list' %}" class="btn btn-light border fw-semibold btn-sm rounded-3 px-3 py-2">
+            <i class="fas fa-arrow-left me-1"></i> Volver
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card-enterprise mb-4">
+            <div class="card-enterprise-header">
+                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-car text-primary me-2"></i> Unidad Vehicular</h6>
+                <a href="{% url 'vehiculo_detail' orden.vehiculo.pk %}" class="btn btn-sm btn-link p-0 text-decoration-none">Ver Historial</a>
+            </div>
+            <div class="card-body p-3">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <span class="plate-badge">
+                        <span class="plate-country">PE</span>
+                        <span class="plate-number">{{ orden.vehiculo.placa }}</span>
+                    </span>
+                    <div>
+                        <h6 class="fw-bold mb-0">{{ orden.vehiculo.marca }} {{ orden.vehiculo.modelo }}</h6>
+                        <small class="text-muted">Año {{ orden.vehiculo.anio }} | {{ orden.vehiculo.color }}</small>
+                    </div>
+                </div>
+                <ul class="list-group list-group-flush small">
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Kilometraje:</span>
+                        <span class="fw-semibold">{{ orden.kilometraje_ingreso|default:"N/A" }} km</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">Combustible:</span>
+                        <span class="badge bg-light text-dark border">{{ orden.nivel_combustible|default:"N/A" }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span class="text-muted">N° Motor / Chasis:</span>
+                        <span class="font-monospace">{{ orden.vehiculo.numero_chasis|default:"N/A" }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-users-cog text-primary me-2"></i> Cliente & Técnico</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted text-uppercase fw-bold">Cliente Propietario</small>
+                    <div class="fw-bold fs-6">{{ orden.cliente.nombre_completo }}</div>
+                    <div class="small text-muted"><i class="fas fa-id-card me-1"></i> DNI/RUC: {{ orden.cliente.dni_ruc }}</div>
+                    <div class="small text-muted"><i class="fas fa-phone me-1"></i> Tel: {{ orden.cliente.telefono|default:"No reg." }}</div>
+                    <div class="small text-muted"><i class="fas fa-envelope me-1"></i> {{ orden.cliente.email|default:"No reg." }}</div>
+                </div>
+                <hr>
+                <div>
+                    <small class="text-muted text-uppercase fw-bold">Mecánico Asignado</small>
+                    {% if orden.mecanico %}
+                        <div class="fw-bold">{{ orden.mecanico.nombre_completo }}</div>
+                        <div class="small text-primary"><i class="fas fa-wrench me-1"></i> {{ orden.mecanico.especialidad }}</div>
+                        <div class="small text-muted"><i class="fas fa-phone-alt me-1"></i> {{ orden.mecanico.telefono }}</div>
+                    {% else %}
+                        <div class="text-warning small fst-italic">No hay mecánico asignado aún</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-tasks text-primary me-2"></i> Actualizar Estado</h6>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="cambiar_estado">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Estado de la Reparación</label>
+                        <select name="estado" class="form-select">
+                            <option value="Pendiente" {% if orden.estado == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                            <option value="En Diagnóstico" {% if orden.estado == 'En Diagnóstico' %}selected{% endif %}>En Diagnóstico</option>
+                            <option value="En Proceso" {% if orden.estado == 'En Proceso' %}selected{% endif %}>En Proceso</option>
+                            <option value="Esperando Repuestos" {% if orden.estado == 'Esperando Repuestos' %}selected{% endif %}>Esperando Repuestos</option>
+                            <option value="Finalizado" {% if orden.estado == 'Finalizado' %}selected{% endif %}>Finalizado</option>
+                            <option value="Entregado" {% if orden.estado == 'Entregado' %}selected{% endif %}>Entregado</option>
+                            <option value="Cancelado" {% if orden.estado == 'Cancelado' %}selected{% endif %}>Cancelado</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Notas Técnicas / Observaciones</label>
+                        <textarea name="notas_tecnicas" class="form-control form-control-sm" rows="3">{{ orden.notas_tecnicas }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-dark btn-sm w-100">
+                        <i class="fas fa-save me-1"></i> Actualizar Estado
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 mb-4 bg-light border-start border-4 border-warning">
+            <div class="card-body p-3">
+                <h6 class="fw-bold mb-1 text-dark"><i class="fas fa-exclamation-triangle text-warning me-2"></i> Problema o Falla Reportada por el Cliente:</h6>
+                <p class="mb-0 text-secondary">{{ orden.problema_reportado }}</p>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-cogs text-primary me-2"></i> Mano de Obra y Servicios</h6>
+                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalServicio">
+                    <i class="fas fa-plus me-1"></i> Añadir Servicio
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Servicio</th>
+                            <th>Cant.</th>
+                            <th>Precio Unit.</th>
+                            <th>Subtotal</th>
+                            <th class="text-end pe-3">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for os in servicios_orden %}
+                        <tr>
+                            <td class="ps-3">
+                                <div class="fw-bold">{{ os.servicio.nombre }}</div>
+                                <small class="text-muted">{{ os.servicio.categoria }} ({{ os.servicio.tiempo_estimado_min }} min)</small>
+                            </td>
+                            <td>{{ os.cantidad }}</td>
+                            <td>S/ {{ os.precio_unitario|floatformat:2 }}</td>
+                            <td class="fw-bold text-dark">S/ {{ os.subtotal|floatformat:2 }}</td>
+                            <td class="text-end pe-3">
+                                <form method="POST" action="" class="d-inline" onsubmit="return confirm('¿Quitar este servicio de la orden?');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="eliminar_servicio">
+                                    <input type="hidden" name="item_id" value="{{ os.pk }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger border-0">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                No se han registrado servicios o mano de obra en esta orden.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-boxes text-primary me-2"></i> Repuestos y Materiales Utilizados</h6>
+                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalRepuesto">
+                    <i class="fas fa-plus me-1"></i> Asignar Repuesto
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Repuesto / Código</th>
+                            <th>Cant.</th>
+                            <th>Precio Unit.</th>
+                            <th>Subtotal</th>
+                            <th class="text-end pe-3">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ru in repuestos_orden %}
+                        <tr>
+                            <td class="ps-3">
+                                <div class="fw-bold">{{ ru.repuesto.nombre }}</div>
+                                <small class="text-muted font-monospace">{{ ru.repuesto.codigo }}</small>
+                            </td>
+                            <td><span class="badge bg-light text-dark border">{{ ru.cantidad }} u.</span></td>
+                            <td>S/ {{ ru.precio_unitario|floatformat:2 }}</td>
+                            <td class="fw-bold text-dark">S/ {{ ru.subtotal|floatformat:2 }}</td>
+                            <td class="text-end pe-3">
+                                <form method="POST" action="" class="d-inline" onsubmit="return confirm('¿Quitar repuesto? Se devolverá el stock al almacén.');">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="eliminar_repuesto">
+                                    <input type="hidden" name="ru_id" value="{{ ru.pk }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger border-0">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                No se han registrado repuestos utilizados aún.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 mb-4 bg-light">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-3 text-dark border-bottom pb-2">
+                    <i class="fas fa-calculator text-primary me-2"></i> Resumen de Liquidación
+                </h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-between py-1 border-bottom">
+                            <span class="text-muted">Total Mano de Obra / Servicios:</span>
+                            <span class="fw-bold">S/ {{ orden.total_servicios|floatformat:2 }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-1 border-bottom">
+                            <span class="text-muted">Total Repuestos:</span>
+                            <span class="fw-bold">S/ {{ orden.total_repuestos|floatformat:2 }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-1 border-bottom">
+                            <span class="text-muted">Subtotal (Neto):</span>
+                            <span class="fw-bold">S/ {{ orden.subtotal|floatformat:2 }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between py-1">
+                            <span class="text-muted">IGV (18%):</span>
+                            <span class="fw-semibold text-secondary">S/ {{ orden.impuesto|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 border-start">
+                        <div class="p-3 bg-white rounded-3 shadow-sm text-center">
+                            <div class="small text-muted text-uppercase fw-bold">Costo Total de la Orden</div>
+                            <div class="display-6 fw-bold text-motor-accent">S/ {{ orden.costo_total|floatformat:2 }}</div>
+                            <div class="mt-2 pt-2 border-top d-flex justify-content-between small">
+                                <span>Pagado: <b class="text-success">S/ {{ orden.total_pagado|floatformat:2 }}</b></span>
+                                <span>Saldo: <b class="text-danger">S/ {{ saldo_pendiente|floatformat:2 }}</b></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-stethoscope text-primary me-2"></i> Diagnósticos de Falla</h6>
+                <a href="{% url 'diagnostico_create' %}?orden_id={{ orden.pk }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-plus me-1"></i> Nuevo Diagnóstico
+                </a>
+            </div>
+            <div class="card-body">
+                {% for d in diagnosticos %}
+                <div class="p-3 mb-2 bg-light rounded-3 border-start border-4 {% if d.gravedad == 'Critica' %}border-danger{% elif d.gravedad == 'Alta' %}border-warning{% else %}border-info{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-bold text-dark">{{ d.codigo_diagnostico }} - {{ d.sistema_afectado }}</span>
+                        <span class="badge {% if d.gravedad == 'Critica' %}bg-danger{% elif d.gravedad == 'Alta' %}bg-warning text-dark{% else %}bg-info text-dark{% endif %}">
+                            Gravedad: {{ d.gravedad }}
+                        </span>
+                    </div>
+                    <p class="small mb-1 text-secondary"><b>Descripción:</b> {{ d.descripcion_falla }}</p>
+                    <p class="small mb-0 text-success"><b>Solución Recomendada:</b> {{ d.solucion_recomendada }}</p>
+                </div>
+                {% empty %}
+                <div class="text-center py-3 text-muted small">
+                    No se han registrado diagnósticos específicos para esta orden.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-money-bill-wave text-success me-2"></i> Pagos Registrados</h6>
+                {% if saldo_pendiente > 0 %}
+                <a href="{% url 'pago_create' %}?orden_id={{ orden.pk }}" class="btn btn-sm btn-success">
+                    <i class="fas fa-plus me-1"></i> Cobrar Saldo
+                </a>
+                {% endif %}
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">N° Recibo</th>
+                            <th>Fecha</th>
+                            <th>Método</th>
+                            <th>Monto</th>
+                            <th>Estado</th>
+                            <th class="text-end pe-3">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in pagos %}
+                        <tr>
+                            <td class="ps-3 font-monospace fw-bold">{{ p.numero_recibo }}</td>
+                            <td>{{ p.fecha_pago|date:"d/m/Y H:i" }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ p.metodo_pago }}</span></td>
+                            <td class="fw-bold text-success">S/ {{ p.monto|floatformat:2 }}</td>
+                            <td>
+                                {% if p.estado == 'Completado' %}
+                                    <span class="badge bg-success">Completado</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ p.estado }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-3">
+                                <a href="{% url 'pago_imprimir' p.pk %}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-print"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-3 text-muted">
+                                Aún no se han recibido pagos para esta orden.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalServicio" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <form method="POST" action="">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="agregar_servicio">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-plus-circle text-primary me-2"></i> Añadir Mano de Obra</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Seleccionar Servicio</label>
+                        <select name="servicio_id" class="form-select" required>
+                            <option value="">-- Elija un servicio del catálogo --</option>
+                            {% for s in catalogo_servicios %}
+                            <option value="{{ s.pk }}">{{ s.nombre }} - S/ {{ s.precio|floatformat:2 }} ({{ s.categoria }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Cantidad / Veces</label>
+                        <input type="number" name="cantidad" value="1" min="1" max="10" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary fw-bold">Añadir a la Orden</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalRepuesto" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <form method="POST" action="">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="agregar_repuesto">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-box-open text-primary me-2"></i> Asignar Repuesto del Almacén</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Seleccionar Repuesto</label>
+                        <select name="repuesto_id" class="form-select" required>
+                            <option value="">-- Elija un repuesto con stock disponible --</option>
+                            {% for r in catalogo_repuestos %}
+                            <option value="{{ r.pk }}">{{ r.nombre }} ({{ r.codigo }}) - S/ {{ r.precio_unitario|floatformat:2 }} [Stock: {{ r.stock }}]</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Cantidad a Utilizar</label>
+                        <input type="number" name="cantidad" value="1" min="1" class="form-control" required>
+                        <div class="form-text">El stock del almacén se descontará automáticamente.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary fw-bold">Asignar Repuesto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

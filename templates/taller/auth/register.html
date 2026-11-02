@@ -1,0 +1,129 @@
+{% extends 'base_auth.html' %}
+{% load static %}
+
+{% block title %}Alta de Colaborador | {{ APP_NAME }}{% endblock %}
+
+{% block content %}
+<div class="auth-grid">
+
+    <aside class="auth-brand-panel">
+        <a href="{% url 'login' %}" class="auth-brand">
+            <span class="brand-emblem"><i class="fas fa-wrench"></i></span>
+            <span class="brand-copy">
+                <h2>MOTOR EXPRESS</h2>
+                <span>Workshop Suite · 2026</span>
+            </span>
+        </a>
+
+        <div class="auth-brand-copy">
+            <span class="auth-kicker"><i class="fas fa-users"></i> Nuevo colaborador</span>
+            <h1>Suma tu talento<br><span class="grad">al equipo técnico.</span></h1>
+            <p>
+                Crea una cuenta con el nivel de acceso adecuado: administración global,
+                recepción y caja, o jefatura técnica de taller.
+            </p>
+            <ul class="auth-features">
+                <li><i class="fas fa-circle-check"></i> Permisos por rol</li>
+                <li><i class="fas fa-circle-check"></i> Trazabilidad de operaciones</li>
+                <li><i class="fas fa-circle-check"></i> Acceso desde cualquier dispositivo</li>
+            </ul>
+        </div>
+
+        <div class="auth-car-card">
+            <img src="{% static 'img/banners/hero-car.svg' %}" alt="Ilustración de vehículo Motor Express">
+            <span class="auth-car-badge"><i class="fas fa-shield-halved"></i> Cuentas verificadas</span>
+        </div>
+
+        <div class="auth-brand-footer">
+            <span>© 2026 Motor Express Automotive Corp.</span>
+            <span class="foot-status">Servidores operativos</span>
+        </div>
+    </aside>
+
+    <main class="auth-form-panel">
+        <div class="auth-form-wrap">
+
+            <div class="d-flex d-lg-none align-items-center gap-2 mb-4">
+                <span class="brand-emblem"><i class="fas fa-wrench"></i></span>
+                <div>
+                    <div class="fw-bold" style="font-size:.95rem;letter-spacing:-.02em;color:var(--ink-900);">MOTOR EXPRESS</div>
+                    <div class="text-uppercase fw-bold" style="font-size:.55rem;letter-spacing:.18em;color:var(--brand-600);">Workshop Suite</div>
+                </div>
+            </div>
+
+            <div class="auth-form-head">
+                <span class="auth-pill"><i class="fas fa-user-plus"></i> Alta de personal</span>
+                <h2>Crear cuenta de operador</h2>
+                <p>Registra los datos del nuevo colaborador del taller.</p>
+            </div>
+
+            <form method="POST" action="" autocomplete="off" novalidate>
+                {% csrf_token %}
+
+                <div>
+                    <label class="form-label" for="regNombre">Nombre y apellidos *</label>
+                    <div class="auth-input-wrap">
+                        <i class="fas fa-id-card auth-input-icon"></i>
+                        <input type="text" name="nombre" id="regNombre" class="form-control"
+                               placeholder="Ej. Roberto Paredes" required>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label" for="regEmail">Correo corporativo *</label>
+                    <div class="auth-input-wrap">
+                        <i class="fas fa-envelope auth-input-icon"></i>
+                        <input type="email" name="email" id="regEmail" class="form-control"
+                               placeholder="colaborador@motorexpress.pe" required>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label" for="regRol">Rol / nivel de acceso *</label>
+                    <div class="auth-input-wrap">
+                        <i class="fas fa-user-shield auth-input-icon"></i>
+                        <select name="rol" id="regRol" class="form-select" style="padding-left:42px;height:50px;" required>
+                            <option value="Administrador">Administrador General (control global)</option>
+                            <option value="Recepcionista" selected>Recepción &amp; Caja (atención al cliente)</option>
+                            <option value="Mecanico">Jefe / Técnico Mecánico (operaciones)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label class="form-label" for="regPass">Contraseña *</label>
+                        <div class="auth-input-wrap">
+                            <i class="fas fa-lock auth-input-icon"></i>
+                            <input type="password" name="password" id="regPass" class="form-control"
+                                   placeholder="Mín. 6 caracteres" required>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label" for="regPass2">Confirmar *</label>
+                        <div class="auth-input-wrap">
+                            <i class="fas fa-lock auth-input-icon"></i>
+                            <input type="password" name="password_confirm" id="regPass2" class="form-control"
+                                   placeholder="Repite la contraseña" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="auth-meta-row" style="margin-top:.85rem;">
+                    <span class="secure-note"><i class="fas fa-circle-info"></i> La cuenta se crea con permisos según el rol.</span>
+                </div>
+
+                <button type="submit" class="btn-cta-accent auth-submit">
+                    <i class="fas fa-check"></i>
+                    Crear cuenta de operador
+                </button>
+            </form>
+
+            <div class="auth-form-foot">
+                ¿Ya dispone de credenciales activas?
+                <a href="{% url 'login' %}"><i class="fas fa-arrow-left me-1" style="font-size:.65rem;"></i> Volver al portal de acceso</a>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

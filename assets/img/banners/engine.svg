@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240" width="100%" height="100%">
+  <defs>
+    <linearGradient id="engGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="240" fill="url(#engGrad)" />
+  <circle cx="200" cy="120" r="85" fill="#334155" opacity="0.3" />
+  <!-- Engine block shape -->
+  <g transform="translate(125, 45)" fill="#e2e8f0" stroke="#0b3b60" stroke-width="2">
+    <rect x="20" y="20" width="110" height="90" rx="10" fill="#f8fafc" />
+    <rect x="35" y="5" width="25" height="15" fill="#94a3b8" />
+    <rect x="90" y="5" width="25" height="15" fill="#94a3b8" />
+    <circle cx="75" cy="65" r="28" fill="#e63946" stroke="#ffffff" stroke-width="3" />
+    <polygon points="75,45 80,60 95,65 80,70 75,85 70,70 55,65 70,60" fill="#ffffff" />
+    <rect x="0" y="45" width="20" height="40" rx="4" fill="#64748b" />
+    <rect x="130" y="45" width="20" height="40" rx="4" fill="#64748b" />
+    <!-- Pistons indicators -->
+    <line x1="45" y1="125" x2="45" y2="145" stroke="#e63946" stroke-width="6" stroke-linecap="round" />
+    <line x1="75" y1="125" x2="75" y2="145" stroke="#e63946" stroke-width="6" stroke-linecap="round" />
+    <line x1="105" y1="125" x2="105" y2="145" stroke="#e63946" stroke-width="6" stroke-linecap="round" />
+  </g>
+  <text x="200" y="210" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-weight="700" font-size="16" fill="#f8fafc">AFINAMIENTO &amp; MOTORES</text>
+</svg>

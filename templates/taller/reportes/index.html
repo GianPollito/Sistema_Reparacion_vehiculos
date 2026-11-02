@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Centro de Informes Gerenciales | {{ APP_NAME }}{% endblock %}
+
+{% block breadcrumb %}
+    <span class="text-muted">Gerencia</span> / <span class="crumb-current">Informes Gerenciales</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-corporate">
+    <div>
+        <h3>Informes Gerenciales &amp; Auditoría</h3>
+        <p>Auditoría operativa, rendimiento financiero de taller, rotación de flota y tiempos de entrega.</p>
+    </div>
+    <div class="btn-group">
+        <button type="button" class="btn btn-outline-dark dropdown-toggle rounded-3 px-3 py-2 fw-semibold small shadow-sm" data-bs-toggle="dropdown">
+            <i class="fas fa-file-excel text-success me-1"></i> Exportar Datos (CSV)
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-2 mt-2">
+            <li><a class="dropdown-item py-2 small fw-semibold" href="{% url 'reportes_export_csv' %}?tipo=ingresos"><i class="fas fa-money-bill-wave text-success me-2"></i>Reporte de Ingresos</a></li>
+            <li><a class="dropdown-item py-2 small fw-semibold" href="{% url 'reportes_export_csv' %}?tipo=servicios"><i class="fas fa-tools text-primary me-2"></i>Reporte de Servicios Prestados</a></li>
+            <li><a class="dropdown-item py-2 small fw-semibold" href="{% url 'reportes_export_csv' %}?tipo=vehiculos"><i class="fas fa-car text-dark me-2"></i>Reporte de Flota Atendida</a></li>
+            <li><a class="dropdown-item py-2 small fw-semibold" href="{% url 'reportes_export_csv' %}?tipo=general"><i class="fas fa-clipboard-list text-secondary me-2"></i>Auditoría de Órdenes de Trabajo</a></li>
+        </ul>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card-enterprise h-100 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="badge bg-primary-subtle text-primary p-3 rounded-4">
+                    <i class="fas fa-cogs fa-2x"></i>
+                </span>
+                <span class="fw-bold fs-3 text-dark font-monospace">{{ total_servicios }}</span>
+            </div>
+            <h6 class="fw-bold text-dark mb-1">Servicios Realizados</h6>
+            <p class="small text-muted mb-4" style="min-height: 40px;">Historial analítico de intervenciones y volumen por categoría técnica.</p>
+            <a href="{% url 'reporte_servicios' %}" class="btn btn-sm btn-light border w-100 rounded-3 fw-semibold">
+                Abrir Informe <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <div class="card-enterprise h-100 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="badge bg-info-subtle text-info p-3 rounded-4">
+                    <i class="fas fa-car-side fa-2x"></i>
+                </span>
+                <span class="fw-bold fs-3 text-dark font-monospace">{{ total_vehiculos }}</span>
+            </div>
+            <h6 class="fw-bold text-dark mb-1">Flota Atendida</h6>
+            <p class="small text-muted mb-4" style="min-height: 40px;">Frecuencia de visitas por marca, modelo y volumen de inversión por cliente.</p>
+            <a href="{% url 'reporte_vehiculos' %}" class="btn btn-sm btn-light border w-100 rounded-3 fw-semibold">
+                Abrir Informe <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <div class="card-enterprise h-100 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="badge bg-warning-subtle text-warning p-3 rounded-4">
+                    <i class="fas fa-hourglass-half fa-2x"></i>
+                </span>
+                <span class="fw-bold fs-3 text-warning font-monospace">{{ total_pendientes }}</span>
+            </div>
+            <h6 class="fw-bold text-dark mb-1">Reparaciones en Curso</h6>
+            <p class="small text-muted mb-4" style="min-height: 40px;">Monitoreo de bahías activas, mecánicos asignados y tiempos de entrega.</p>
+            <a href="{% url 'reporte_reparaciones' %}" class="btn btn-sm btn-light border w-100 rounded-3 fw-semibold">
+                Abrir Informe <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <div class="card-enterprise h-100 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="badge bg-success-subtle text-success p-3 rounded-4">
+                    <i class="fas fa-wallet fa-2x"></i>
+                </span>
+                <span class="fw-bold fs-4 text-success font-monospace">S/ {{ total_ingresos|floatformat:2 }}</span>
+            </div>
+            <h6 class="fw-bold text-dark mb-1">Ingresos Obtenidos</h6>
+            <p class="small text-muted mb-4" style="min-height: 40px;">Balance de recaudación por canales de cobro y períodos fiscales.</p>
+            <a href="{% url 'reporte_ingresos' %}" class="btn btn-sm btn-light border w-100 rounded-3 fw-semibold">
+                Abrir Informe <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card-enterprise h-100">
+            <div class="card-enterprise-header">
+                <div>
+                    <h6 class="fw-bold text-dark mb-0">Servicios con Mayor Demanda</h6>
+                    <small class="text-muted">Ranking de intervenciones más solicitadas</small>
+                </div>
+                <a href="{% url 'reporte_servicios' %}" class="btn btn-sm btn-link text-decoration-none">Ver Todos</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table-enterprise">
+                    <thead>
+                        <tr>
+                            <th>Servicio</th>
+                            <th>Línea Técnica</th>
+                            <th class="text-center">Veces</th>
+                            <th class="text-end">Recaudado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in top_servicios %}
+                        <tr>
+                            <td class="fw-semibold text-dark">{{ s.nombre }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ s.categoria }}</span></td>
+                            <td class="text-center fw-bold">{{ s.total_ejecutado }}</td>
+                            <td class="text-end fw-bold text-dark">S/ {{ s.ingresos_generados|default:"0.00"|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center py-3 text-muted">Sin datos suficientes.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card-enterprise h-100">
+            <div class="card-enterprise-header">
+                <div>
+                    <h6 class="fw-bold text-dark mb-0">Marcas con Mayor Frecuencia</h6>
+                    <small class="text-muted">Afluencia vehicular por fabricante</small>
+                </div>
+                <a href="{% url 'reporte_vehiculos' %}" class="btn btn-sm btn-link text-decoration-none">Ver Todos</a>
+            </div>
+            <div class="card-body p-4">
+                <ul class="list-group list-group-flush">
+                    {% for m in top_marcas %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="p-2 bg-light rounded-3 text-primary">
+                                <i class="fas fa-car-side"></i>
+                            </div>
+                            <span class="fw-bold text-dark">{{ m.marca }}</span>
+                        </div>
+                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2 fw-bold">{{ m.total }} ingresos</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center text-muted">Sin datos de vehículos.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

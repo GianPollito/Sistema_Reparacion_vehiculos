@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Reporte de Vehículos Atendidos | {{ APP_NAME }}{% endblock %}
+
+{% block breadcrumb %}
+    <span>Informes</span> / <span class="crumb-current">Vehículos</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-corporate">
+    <div>
+        <h3>Reporte de Vehículos Atendidos</h3>
+        <p>Flota vehicular, frecuencia de ingresos y facturación acumulada por unidad.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        <a href="{% url 'reportes_export_csv' %}?tipo=vehiculos" class="btn-secondary-action">
+            <i class="fas fa-file-csv text-success"></i> Exportar CSV
+        </a>
+        <a href="{% url 'reportes_index' %}" class="btn-secondary-action">
+            <i class="fas fa-arrow-left"></i> Volver a Reportes
+        </a>
+    </div>
+</div>
+
+<div class="card-enterprise p-3 mb-4">
+    <form method="GET" class="row g-2 align-items-center" data-auto-filter>
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                <input type="text" name="search" value="{{ search }}" class="form-control border-start-0 ps-0" placeholder="Buscar placa o propietario…" autocomplete="off">
+            </div>
+        </div>
+        <div class="col-md-5">
+            <select name="marca" class="form-select">
+                <option value="">-- Todas las marcas --</option>
+                {% for m in marcas %}
+                <option value="{{ m }}" {% if marca == m %}selected{% endif %}>{{ m }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-1 d-flex justify-content-end">
+            {% if marca or search %}
+            <a href="{% url 'reporte_vehiculos' %}" class="btn btn-light border" title="Restablecer filtros" aria-label="Restablecer filtros">
+                <i class="fas fa-undo text-muted"></i>
+            </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<div class="card-enterprise overflow-hidden">
+    <div class="table-responsive">
+        <table class="table-enterprise">
+            <thead>
+                <tr>
+                    <th>Placa Oficial</th>
+                    <th>Marca &amp; Modelo</th>
+                    <th>Año / Color</th>
+                    <th>Propietario</th>
+                    <th>Teléfono</th>
+                    <th class="text-center">Órdenes / Visitas</th>
+                    <th class="text-end">Inversión Acumulada</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in vehiculos %}
+                <tr>
+                    <td>
+                        <a href="{% url 'vehiculo_detail' v.pk %}" class="plate-badge">
+                            <span class="plate-country">PE</span>
+                            <span class="plate-number">{{ v.placa }}</span>
+                        </a>
+                    </td>
+                    <td>
+                        <strong class="text-dark d-block">{{ v.marca }} {{ v.modelo }}</strong>
+                        <small class="text-muted font-monospace">VIN: {{ v.numero_chasis|default:"S/N" }}</small>
+                    </td>
+                    <td><span class="small text-secondary">{{ v.anio }} - {{ v.color|default:"N/A" }}</span></td>
+                    <td>
+                        <div class="fw-semibold text-dark">{{ v.cliente.nombre_completo }}</div>
+                        <small class="text-muted font-monospace">{{ v.cliente.dni_ruc }}</small>
+                    </td>
+                    <td><span class="small text-secondary">{{ v.cliente.telefono|default:"No reg." }}</span></td>
+                    <td class="text-center">
+                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold">{{ v.total_visitas }} ingresos</span>
+                    </td>
+                    <td class="text-end fw-bold text-dark fs-6">
+                        S/ {{ v.total_gastado|default:"0.00"|floatformat:2 }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        No se encontraron registros de vehículos con los filtros especificados.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

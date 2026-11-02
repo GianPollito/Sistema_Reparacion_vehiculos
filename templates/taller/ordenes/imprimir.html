@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orden de Trabajo {{ orden.numero_orden }} - {{ APP_NAME }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1a202c; background-color: #fff; }
+        .invoice-box { max-width: 850px; margin: auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 8px; }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; margin: 0; padding: 0; }
+            .invoice-box { border: none; padding: 0; width: 100%; max-width: 100%; }
+        }
+        .header-logo { font-size: 26px; font-weight: 800; color: #0d1b2a; }
+        .header-logo span { color: #e63946; }
+    </style>
+</head>
+<body class="py-4">
+    <div class="container invoice-box">
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom no-print">
+            <a href="{% url 'orden_detail' orden.pk %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i> Volver a la Orden
+            </a>
+            <button onclick="window.print()" class="btn btn-primary btn-sm">
+                <i class="fas fa-print me-1"></i> Imprimir Orden / Exportar PDF
+            </button>
+        </div>
+
+        <div class="row align-items-center mb-4">
+            <div class="col-sm-7">
+                <div class="header-logo"><i class="fas fa-wrench text-danger me-2"></i>MOTOR <span>EXPRESS</span></div>
+                <div class="text-muted small">Servicio Automotriz Multimarca & Electrónica Avanzada</div>
+                <div class="small mt-1">
+                    <div><b>RUC:</b> 20608945123 | <b>Tel:</b> (01) 458-9200 / 998-123-456</div>
+                    <div><b>Dirección:</b> Av. Industrial 458, Lima - Perú</div>
+                    <div><b>Email:</b> contacto@motorexpress.pe</div>
+                </div>
+            </div>
+            <div class="col-sm-5 text-sm-end mt-3 mt-sm-0">
+                <div class="border border-2 border-danger p-3 rounded-3 text-center bg-light">
+                    <div class="small fw-bold text-uppercase text-danger">ORDEN DE TRABAJO TÉCNICA</div>
+                    <div class="h4 fw-bold font-monospace mb-0">{{ orden.numero_orden }}</div>
+                    <div class="small text-muted mt-1">Estado: <span class="badge bg-dark">{{ orden.estado }}</span></div>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="row g-3 mb-4">
+            <div class="col-6">
+                <div class="card h-100 border rounded-3 p-3 bg-light">
+                    <h6 class="fw-bold text-primary mb-2"><i class="fas fa-user me-2"></i>DATOS DEL CLIENTE</h6>
+                    <div class="small"><b>Nombre:</b> {{ orden.cliente.nombre_completo }}</div>
+                    <div class="small"><b>DNI/RUC:</b> {{ orden.cliente.dni_ruc }}</div>
+                    <div class="small"><b>Teléfono:</b> {{ orden.cliente.telefono|default:"No registrado" }}</div>
+                    <div class="small"><b>Dirección:</b> {{ orden.cliente.direccion|default:"No registrada" }}</div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card h-100 border rounded-3 p-3 bg-light">
+                    <h6 class="fw-bold text-primary mb-2"><i class="fas fa-car me-2"></i>DATOS DEL VEHÍCULO</h6>
+                    <div class="small"><b>Placa:</b> <span class="fw-bold font-monospace">{{ orden.vehiculo.placa }}</span></div>
+                    <div class="small"><b>Vehículo:</b> {{ orden.vehiculo.marca }} {{ orden.vehiculo.modelo }} ({{ orden.vehiculo.anio }})</div>
+                    <div class="small"><b>Km Ingreso:</b> {{ orden.kilometraje_ingreso|default:"N/A" }} km | <b>Combustible:</b> {{ orden.nivel_combustible|default:"N/A" }}</div>
+                    <div class="small"><b>Técnico:</b> {{ orden.mecanico.nombre_completo|default:"Por asignar" }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <div class="small text-muted"><b>Fecha de Ingreso:</b> {{ orden.fecha_ingreso|date:"d/m/Y H:i" }} | <b>Fecha Estimada Entrega:</b> {{ orden.fecha_estimada_entrega|date:"d/m/Y H:i"|default:"Por definir" }}</div>
+            <div class="p-2 mt-2 bg-light border rounded small">
+                <b>Problema Reportado / Motivo:</b> {{ orden.problema_reportado }}
+            </div>
+            {% if orden.notas_tecnicas %}
+            <div class="p-2 mt-1 bg-light border rounded small">
+                <b>Observaciones Técnicas:</b> {{ orden.notas_tecnicas }}
+            </div>
+            {% endif %}
+        </div>
+
+        <h6 class="fw-bold text-dark border-bottom pb-1"><i class="fas fa-tools text-primary me-2"></i>1. Mano de Obra & Servicios</h6>
+        <table class="table table-sm table-bordered mb-4">
+            <thead class="table-light small">
+                <tr>
+                    <th>Descripción del Servicio</th>
+                    <th class="text-center" style="width: 80px;">Cant.</th>
+                    <th class="text-end" style="width: 120px;">Precio Unit.</th>
+                    <th class="text-end" style="width: 120px;">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody class="small">
+                {% for s in servicios %}
+                <tr>
+                    <td>{{ s.servicio.nombre }} <span class="text-muted">({{ s.servicio.categoria }})</span></td>
+                    <td class="text-center">{{ s.cantidad }}</td>
+                    <td class="text-end">S/ {{ s.precio_unitario|floatformat:2 }}</td>
+                    <td class="text-end fw-semibold">S/ {{ s.subtotal|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted">Sin servicios registrados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h6 class="fw-bold text-dark border-bottom pb-1"><i class="fas fa-boxes text-primary me-2"></i>2. Repuestos & Insumos Utilizados</h6>
+        <table class="table table-sm table-bordered mb-4">
+            <thead class="table-light small">
+                <tr>
+                    <th>Código y Repuesto</th>
+                    <th class="text-center" style="width: 80px;">Cant.</th>
+                    <th class="text-end" style="width: 120px;">Precio Unit.</th>
+                    <th class="text-end" style="width: 120px;">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody class="small">
+                {% for r in repuestos %}
+                <tr>
+                    <td><span class="font-monospace fw-bold">{{ r.repuesto.codigo }}</span> - {{ r.repuesto.nombre }}</td>
+                    <td class="text-center">{{ r.cantidad }}</td>
+                    <td class="text-end">S/ {{ r.precio_unitario|floatformat:2 }}</td>
+                    <td class="text-end fw-semibold">S/ {{ r.subtotal|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted">Sin repuestos cargados a esta orden.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="row justify-content-end mb-5">
+            <div class="col-sm-6">
+                <table class="table table-sm table-borderless">
+                    <tr class="border-bottom">
+                        <td class="small">Total Mano de Obra:</td>
+                        <td class="text-end small fw-semibold">S/ {{ orden.total_servicios|floatformat:2 }}</td>
+                    </tr>
+                    <tr class="border-bottom">
+                        <td class="small">Total Repuestos:</td>
+                        <td class="text-end small fw-semibold">S/ {{ orden.total_repuestos|floatformat:2 }}</td>
+                    </tr>
+                    <tr class="border-bottom">
+                        <td class="small">Subtotal (Neto):</td>
+                        <td class="text-end small fw-semibold">S/ {{ orden.subtotal|floatformat:2 }}</td>
+                    </tr>
+                    <tr class="border-bottom">
+                        <td class="small">IGV (18%):</td>
+                        <td class="text-end small fw-semibold">S/ {{ orden.impuesto|floatformat:2 }}</td>
+                    </tr>
+                    <tr class="table-light border-top border-bottom">
+                        <td class="fw-bold">TOTAL GENERAL:</td>
+                        <td class="text-end fw-bold text-danger fs-5">S/ {{ orden.costo_total|floatformat:2 }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="row text-center mt-5 pt-4">
+            <div class="col-6">
+                <div class="border-top border-dark mx-4 pt-2 small fw-bold">
+                    Firma del Técnico Mecánico<br>
+                    <span class="text-muted fw-normal">{{ orden.mecanico.nombre_completo|default:"Taller Motor Express" }}</span>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="border-top border-dark mx-4 pt-2 small fw-bold">
+                    Firma de Conformidad del Cliente<br>
+                    <span class="text-muted fw-normal">{{ orden.cliente.nombre_completo }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center text-muted small mt-5 pt-3 border-top">
+            Documento Técnico Oficial Emitido por Motor Express Automotive Systems &bull; Control de Calidad y Garantía de Taller
+        </div>
+    </div>
+</body>
+</html>

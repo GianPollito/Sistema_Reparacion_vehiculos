@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Reporte de Servicios Realizados | {{ APP_NAME }}{% endblock %}
+
+{% block breadcrumb %}
+    <span>Informes</span> / <span class="crumb-current">Servicios</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-corporate">
+    <div>
+        <h3>Reporte de Servicios Realizados</h3>
+        <p>Detalle de mano de obra y servicios ejecutados por rango de fechas.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        <a href="{% url 'reportes_export_csv' %}?tipo=servicios" class="btn-secondary-action">
+            <i class="fas fa-file-csv text-success"></i> Exportar CSV
+        </a>
+        <a href="{% url 'reportes_index' %}" class="btn-secondary-action">
+            <i class="fas fa-arrow-left"></i> Volver a Reportes
+        </a>
+    </div>
+</div>
+
+<div class="card-enterprise p-3 mb-4">
+    <form method="GET" class="row g-2 align-items-end" data-auto-filter>
+        <div class="col-md-4">
+            <label class="form-label text-secondary mb-1">Fecha Desde:</label>
+            <input type="date" name="fecha_inicio" value="{{ fecha_inicio }}" class="form-control">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label text-secondary mb-1">Fecha Hasta:</label>
+            <input type="date" name="fecha_fin" value="{{ fecha_fin }}" class="form-control">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label text-secondary mb-1">Especialidad / Línea:</label>
+            <select name="categoria" class="form-select">
+                <option value="">-- Todas las líneas técnicas --</option>
+                {% for cat in categorias %}
+                <option value="{{ cat }}" {% if categoria == cat %}selected{% endif %}>{{ cat }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+</div>
+
+<div class="row g-3 g-xl-4 mb-4">
+    <div class="col-md-6">
+        <div class="stat-widget">
+            <div class="stat-header">
+                <span class="stat-label">Total Servicios Ejecutados</span>
+                <div class="stat-icon-box bg-primary-subtle text-primary">
+                    <i class="fas fa-screwdriver-wrench"></i>
+                </div>
+            </div>
+            <div class="stat-number text-dark">{{ total_cantidad }} <span class="fs-6 text-muted fw-normal">servicios</span></div>
+            <div class="stat-footer">
+                <span class="stat-badge stat-badge-blue">Mano de obra</span>
+                <span>Trabajos facturados</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="stat-widget">
+            <div class="stat-header">
+                <span class="stat-label">Facturación en Mano de Obra</span>
+                <div class="stat-icon-box bg-success-subtle text-success">
+                    <i class="fas fa-coins"></i>
+                </div>
+            </div>
+            <div class="stat-number text-dark">S/ {{ total_monto|floatformat:2 }}</div>
+            <div class="stat-footer">
+                <span class="stat-badge stat-badge-green">Facturación</span>
+                <span>Subtotal del periodo</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card-enterprise overflow-hidden">
+    <div class="table-responsive">
+        <table class="table-enterprise">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>N° Orden</th>
+                    <th>Servicio Técnico</th>
+                    <th>Especialidad</th>
+                    <th>Vehículo</th>
+                    <th>Cliente</th>
+                    <th>Cant.</th>
+                    <th>Tarifa</th>
+                    <th class="text-end">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for os in servicios_realizados %}
+                <tr>
+                    <td>{{ os.orden.fecha_ingreso|date:"d/m/Y" }}</td>
+                    <td>
+                        <a href="{% url 'orden_detail' os.orden.pk %}" class="fw-bold font-monospace text-primary text-decoration-none">
+                            {{ os.orden.numero_orden }}
+                        </a>
+                    </td>
+                    <td class="fw-semibold text-dark">{{ os.servicio.nombre }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ os.servicio.categoria }}</span></td>
+                    <td>
+                        <span class="plate-badge" style="font-size: 0.72rem;">
+                            <span class="plate-country" style="font-size: 0.55rem; padding: 1px 3px;">PE</span>
+                            <span class="plate-number" style="padding: 1px 4px;">{{ os.orden.vehiculo.placa }}</span>
+                        </span>
+                    </td>
+                    <td><span class="small fw-semibold text-dark">{{ os.orden.cliente.nombre_completo }}</span></td>
+                    <td><span class="badge bg-light text-dark border">{{ os.cantidad }}</span></td>
+                    <td>S/ {{ os.precio_unitario|floatformat:2 }}</td>
+                    <td class="text-end fw-bold text-dark">S/ {{ os.subtotal|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center py-5 text-muted">
+                        No se encontraron servicios realizados en el período seleccionado.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

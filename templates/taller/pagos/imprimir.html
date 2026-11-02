@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprobante de Pago {{ pago.numero_comprobante }} - {{ APP_NAME }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1a202c; background-color: #fff; }
+        .receipt-box { max-width: 650px; margin: auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 8px; }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; margin: 0; padding: 0; }
+            .receipt-box { border: none; padding: 0; width: 100%; max-width: 100%; }
+        }
+        .header-logo { font-size: 24px; font-weight: 800; color: #0d1b2a; }
+        .header-logo span { color: #e63946; }
+    </style>
+</head>
+<body class="py-4">
+    <div class="container receipt-box">
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom no-print">
+            <a href="{% url 'pago_detail' pago.pk %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i> Volver al Pago
+            </a>
+            <button onclick="window.print()" class="btn btn-primary btn-sm">
+                <i class="fas fa-print me-1"></i> Imprimir Comprobante
+            </button>
+        </div>
+
+        <div class="text-center mb-4">
+            <div class="header-logo"><i class="fas fa-wrench text-danger me-2"></i>MOTOR <span>EXPRESS</span></div>
+            <div class="text-muted small">Servicio Automotriz Especializado</div>
+            <div class="small">RUC: 20608945123 • Av. Industrial 458, Lima</div>
+            <div class="small">Tel: (01) 458-9200 • contacto@motorexpress.pe</div>
+        </div>
+
+        <div class="border border-2 border-dark rounded-3 p-3 text-center mb-4 bg-light">
+            <div class="small fw-bold text-uppercase text-secondary">{{ pago.tipo_comprobante }} DE PAGO</div>
+            <div class="h4 fw-bold font-monospace mb-0 text-primary">{{ pago.numero_comprobante }}</div>
+            <div class="small text-muted mt-1">Fecha de Emisión: {{ pago.fecha_pago|date:"d/m/Y H:i" }}</div>
+        </div>
+
+        <div class="card border rounded-3 p-3 mb-4 bg-light">
+            <div class="row g-2 small">
+                <div class="col-sm-6">
+                    <div><b>Cliente:</b> {{ pago.cliente.nombre_completo }}</div>
+                    <div><b>DNI / RUC:</b> {{ pago.cliente.dni_ruc }}</div>
+                    <div><b>Teléfono:</b> {{ pago.cliente.telefono|default:"No reg." }}</div>
+                </div>
+                <div class="col-sm-6">
+                    <div><b>Orden de Trabajo:</b> <span class="font-monospace fw-bold">{{ pago.orden.numero_orden }}</span></div>
+                    <div><b>Vehículo:</b> {{ pago.orden.vehiculo.marca }} {{ pago.orden.vehiculo.modelo }}</div>
+                    <div><b>Placa:</b> <span class="badge bg-dark font-monospace">{{ pago.orden.vehiculo.placa }}</span></div>
+                </div>
+            </div>
+        </div>
+
+        <table class="table table-bordered mb-4">
+            <thead class="table-light small">
+                <tr>
+                    <th>Concepto de Pago</th>
+                    <th>Método</th>
+                    <th class="text-end">Monto Cancelado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="fw-bold">Abono a Orden de Trabajo {{ pago.orden.numero_orden }}</div>
+                        <small class="text-muted">Servicios de reparación y repuestos mecánicos</small>
+                    </td>
+                    <td>
+                        {{ pago.metodo_pago }}
+                        {% if pago.numero_operacion %}<br><small class="text-muted font-monospace">Op: {{ pago.numero_operacion }}</small>{% endif %}
+                    </td>
+                    <td class="text-end fw-bold fs-5 text-success">
+                        S/ {{ pago.monto|floatformat:2 }}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="p-3 bg-light border rounded-3 mb-4 small">
+            <div class="d-flex justify-content-between mb-1">
+                <span>Costo Total de la Orden:</span>
+                <span class="fw-semibold">S/ {{ pago.orden.costo_total|floatformat:2 }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+                <span>Total Acumulado Pagado:</span>
+                <span class="fw-semibold text-success">S/ {{ pago.orden.total_pagado|floatformat:2 }}</span>
+            </div>
+            <div class="d-flex justify-content-between border-top pt-1 fw-bold">
+                <span>Saldo Pendiente de la Orden:</span>
+                <span class="text-danger">S/ {{ pago.orden.saldo_pendiente|floatformat:2 }}</span>
+            </div>
+        </div>
+
+        <div class="text-center mt-5 pt-4">
+            <div class="border-top border-dark mx-auto pt-2 small fw-bold" style="max-width: 280px;">
+                Caja y Facturación<br>
+                <span class="text-muted fw-normal">Taller Motor Express</span>
+            </div>
+        </div>
+
+        <div class="text-center text-muted small mt-4 pt-3 border-top">
+            ¡Gracias por confiar en Motor Express! Conserve este comprobante para cualquier reclamo o garantía.
+        </div>
+    </div>
+</body>
+</html>

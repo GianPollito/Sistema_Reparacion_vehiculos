@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block title %}Expediente Unidad: {{ vehiculo.placa }} | {{ APP_NAME }}{% endblock %}
+
+{% block breadcrumb %}
+    <a href="{% url 'vehiculo_list' %}" class="text-decoration-none text-muted">Flota</a> / <span class="crumb-current">{{ vehiculo.placa }} ({{ vehiculo.marca }})</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-corporate">
+    <div class="d-flex align-items-center gap-3">
+        <span class="plate-badge" style="font-size: 1.25rem;">
+            <span class="plate-country" style="font-size: 0.8rem; padding: 4px 8px;">PE</span>
+            <span class="plate-number" style="padding: 4px 12px;">{{ vehiculo.placa }}</span>
+        </span>
+        <div>
+            <h3 class="mb-1">{{ vehiculo.marca }} {{ vehiculo.modelo }}</h3>
+            <span class="text-muted small">
+                Año {{ vehiculo.anio }} &bull; Odómetro: <strong>{{ vehiculo.kilometraje }} km</strong>
+            </span>
+        </div>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="{% url 'vehiculo_update' vehiculo.pk %}" class="btn btn-outline-dark fw-bold btn-sm rounded-3 px-3 py-2">
+            <i class="fas fa-edit me-1"></i> Modificar Datos
+        </a>
+        <a href="{% url 'orden_create' %}?vehiculo_id={{ vehiculo.pk }}" class="btn-topbar-cta">
+            <i class="fas fa-file-invoice"></i>
+            <span>Nueva Orden</span>
+        </a>
+        <a href="{% url 'vehiculo_list' %}" class="btn btn-light border fw-semibold btn-sm rounded-3 px-3 py-2">
+            <i class="fas fa-arrow-left me-1"></i> Volver
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card-enterprise h-100 p-4">
+            <div class="card-enterprise-header p-0 pb-3 mb-3">
+                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-car text-primary me-2"></i> Especificaciones de la Unidad</h6>
+            </div>
+            
+            <div class="row g-3">
+                <div class="col-6">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.68rem; letter-spacing: 0.05em;">MARCA Y MODELO</small>
+                        <strong class="fs-6 text-dark">{{ vehiculo.marca }} {{ vehiculo.modelo }}</strong>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.68rem; letter-spacing: 0.05em;">AÑO DE FABRICACIÓN</small>
+                        <strong class="fs-6 text-dark font-monospace">{{ vehiculo.anio }}</strong>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.68rem; letter-spacing: 0.05em;">COLOR EXTERIOR</small>
+                        <span class="fw-semibold text-secondary">{{ vehiculo.color|default:'No especificado' }}</span>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.68rem; letter-spacing: 0.05em;">ODÓMETRO REGISTRADO</small>
+                        <strong class="text-primary font-monospace fs-6">{{ vehiculo.kilometraje }} km</strong>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <small class="text-muted text-uppercase fw-bold d-block mb-1" style="font-size: 0.68rem; letter-spacing: 0.05em;">OBSERVACIONES / DETALLES TÉCNICOS</small>
+                        <p class="small text-secondary mb-0">{{ vehiculo.observaciones|default:'Unidad sin observaciones mecánicas registradas.' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card-enterprise h-100 p-4">
+            <div class="card-enterprise-header p-0 pb-3 mb-3">
+                <h6 class="fw-bold mb-0 text-dark"><i class="fas fa-user-tie text-primary me-2"></i> Titular / Propietario</h6>
+                <a href="{% url 'cliente_detail' vehiculo.cliente.pk %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">
+                    Ver Expediente
+                </a>
+            </div>
+
+            <div class="d-flex flex-column gap-3">
+                <div class="p-3 bg-light rounded-3 border">
+                    <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.68rem; letter-spacing: 0.05em;">NOMBRE / RAZÓN SOCIAL</small>
+                    <a href="{% url 'cliente_detail' vehiculo.cliente.pk %}" class="fw-bold text-decoration-none fs-6 text-dark">
+                        {{ vehiculo.cliente.nombre_completo }}
+                    </a>
+                </div>
+
+                <div class="p-3 bg-light rounded-3 border">
+                    <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.68rem; letter-spacing: 0.05em;">DOCUMENTO DE IDENTIDAD</small>
+                    <span class="badge bg-light text-dark border font-monospace px-2 py-1 fs-6">
+                        <i class="fas fa-id-card text-muted me-1"></i> {{ vehiculo.cliente.dni_ruc }}
+                    </span>
+                </div>
+
+                <div class="p-3 bg-light rounded-3 border">
+                    <small class="text-muted text-uppercase fw-bold d-block" style="font-size: 0.68rem; letter-spacing: 0.05em;">CANAL DE COMUNICACIÓN</small>
+                    <div class="d-flex align-items-center gap-3 mt-1">
+                        <span class="small fw-semibold text-dark"><i class="fas fa-phone-alt text-success me-1"></i>{{ vehiculo.cliente.telefono|default:'-' }}</span>
+                        <span class="small text-muted"><i class="fas fa-envelope text-primary me-1"></i>{{ vehiculo.cliente.email|default:'-' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card-enterprise mb-4">
+    <div class="card-enterprise-header">
+        <div>
+            <h6 class="fw-bold text-dark mb-0"><i class="fas fa-history text-secondary me-2"></i> Historial de Intervenciones en Taller</h6>
+            <small class="text-muted">{{ ordenes.count }} órdenes de trabajo ejecutadas</small>
+        </div>
+        <a href="{% url 'orden_create' %}?vehiculo_id={{ vehiculo.pk }}" class="btn btn-sm btn-dark rounded-pill px-3 fw-bold">
+            <i class="fas fa-plus me-1"></i> Abrir Nueva Orden
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table-enterprise">
+            <thead>
+                <tr>
+                    <th>N° Orden</th>
+                    <th>Fecha Ingreso</th>
+                    <th>Técnico Responsable</th>
+                    <th>Estado de Reparación</th>
+                    <th>Costo Total</th>
+                    <th>Saldo</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for o in ordenes %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'orden_detail' o.pk %}" class="font-monospace fw-bold text-primary text-decoration-none">
+                                {{ o.numero_orden }}
+                            </a>
+                        </td>
+                        <td><small class="text-secondary">{{ o.fecha_ingreso|date:"d/m/Y H:i" }}</small></td>
+                        <td><small class="text-dark fw-semibold">{{ o.mecanico.nombre_completo|default:'Sin asignar' }}</small></td>
+                        <td>
+                            {% if o.estado == 'En Proceso' %}
+                                <span class="badge-status badge-status-progress">En Proceso</span>
+                            {% elif o.estado == 'En Diagnóstico' %}
+                                <span class="badge-status badge-status-diagnostico">En Diagnóstico</span>
+                            {% elif o.estado == 'Pendiente' %}
+                                <span class="badge-status badge-status-pending">Pendiente</span>
+                            {% elif o.estado == 'Esperando Repuestos' %}
+                                <span class="badge-status badge-status-waiting">Repuestos</span>
+                            {% elif o.estado == 'Finalizado' %}
+                                <span class="badge-status badge-status-completed">Finalizado</span>
+                            {% elif o.estado == 'Entregado' %}
+                                <span class="badge-status badge-status-delivered">Entregado</span>
+                            {% else %}
+                                <span class="badge-status badge-status-cancelled">Cancelado</span>
+                            {% endif %}
+                        </td>
+                        <td><strong class="text-dark">S/ {{ o.costo_total|floatformat:2 }}</strong></td>
+                        <td>
+                            {% if o.saldo_pendiente > 0 %}
+                                <span class="badge bg-danger-subtle text-danger">S/ {{ o.saldo_pendiente|floatformat:2 }}</span>
+                            {% else %}
+                                <span class="badge bg-success-subtle text-success">Liquidado</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'orden_detail' o.pk %}" class="btn-action-ghost" title="Ver Detalle de Orden">
+                                <i class="fas fa-eye text-primary"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            <small>No hay órdenes registradas para esta unidad.</small>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card-enterprise">
+    <div class="card-enterprise-header">
+        <div>
+            <h6 class="fw-bold text-dark mb-0"><i class="fas fa-stethoscope text-primary me-2"></i> Diagnósticos Computarizados ({{ diagnosticos.count }})</h6>
+            <small class="text-muted">Registro de fallas evaluadas mediante escáner y verificación física</small>
+        </div>
+        <a href="{% url 'diagnostico_create' %}?vehiculo_id={{ vehiculo.pk }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">
+            <i class="fas fa-plus me-1"></i> Registrar Diagnóstico
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table-enterprise">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Falla Reportada</th>
+                    <th>Diagnóstico Técnico</th>
+                    <th>Severidad</th>
+                    <th>Especialista</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in diagnosticos %}
+                    <tr>
+                        <td><small class="text-secondary">{{ d.fecha_diagnostico|date:"d/m/Y" }}</small></td>
+                        <td><small class="text-dark fw-semibold">{{ d.descripcion_falla }}</small></td>
+                        <td><small class="text-secondary">{{ d.diagnostico_tecnico }}</small></td>
+                        <td>
+                            {% if d.gravedad == 'Crítica' %}
+                                <span class="badge-status badge-status-waiting">Crítica</span>
+                            {% elif d.gravedad == 'Alta' %}
+                                <span class="badge-status badge-status-pending">Alta</span>
+                            {% elif d.gravedad == 'Media' %}
+                                <span class="badge-status badge-status-progress">Media</span>
+                            {% else %}
+                                <span class="badge-status badge-status-completed">Baja</span>
+                            {% endif %}
+                        </td>
+                        <td><small class="text-dark fw-semibold">{{ d.mecanico.nombre_completo }}</small></td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">
+                            <small>No hay diagnósticos previos registrados para este vehículo.</small>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

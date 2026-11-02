@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+
+{% block title %}Agenda de Citas Técnicas | {{ APP_NAME }}{% endblock %}
+
+{% block breadcrumb %}
+    <span class="text-muted">Operaciones</span> / <span class="crumb-current">Agenda de Citas</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-corporate">
+    <div>
+        <h3>Agenda de Citas Técnicas</h3>
+        <p>Programación de recepciones técnicas, mantenimiento preventivo y disponibilidad de bahías en taller.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="{% url 'orden_create' %}" class="btn btn-outline-dark fw-bold btn-sm rounded-3 px-3 py-2">
+            <i class="fas fa-file-invoice me-1 text-danger"></i> Abrir Orden Directa
+        </a>
+        <a href="{% url 'cita_create' %}" class="btn-topbar-cta">
+            <i class="fas fa-calendar-plus"></i>
+            <span>Nueva Cita</span>
+        </a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-widget" style="--stat-accent: #2563eb;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="stat-label">Citas Agendadas</span>
+                    <div class="stat-number">{{ citas|length }}</div>
+                    <small class="text-primary fw-bold"><i class="fas fa-calendar-alt me-1"></i>En calendario</small>
+                </div>
+                <div class="stat-icon-box bg-primary-subtle text-primary">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-widget" style="--stat-accent: #10b981;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="stat-label">Disponibilidad</span>
+                    <div class="stat-number">4 Bahías</div>
+                    <small class="text-success fw-bold"><i class="fas fa-check me-1"></i>Turnos libres hoy</small>
+                </div>
+                <div class="stat-icon-box bg-success-subtle text-success">
+                    <i class="fas fa-warehouse"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-widget" style="--stat-accent: #f59e0b;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="stat-label">Puntualidad</span>
+                    <div class="stat-number">97.8%</div>
+                    <small class="text-warning fw-bold">Cumplimiento de horario</small>
+                </div>
+                <div class="stat-icon-box bg-warning-subtle text-warning">
+                    <i class="fas fa-clock"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-widget" style="--stat-accent: #8b5cf6;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="stat-label">Conversión a OT</span>
+                    <div class="stat-number">92%</div>
+                    <small class="text-muted fw-semibold">Pasan a reparación</small>
+                </div>
+                <div class="stat-icon-box" style="background: #f3e8ff; color: #8b5cf6;">
+                    <i class="fas fa-wrench"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="filter-toolbar-enterprise d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <form method="GET" class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 600px;" data-auto-filter>
+        <input type="date" name="fecha" value="{{ fecha }}" class="form-control rounded-3 border" style="width: 170px;" aria-label="Filtrar por fecha">
+        <select name="estado" class="form-select border rounded-3 text-dark fw-semibold" style="width: auto; min-width: 170px;">
+            <option value="">Todos los Estados</option>
+            <option value="Pendiente" {% if estado == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+            <option value="Confirmada" {% if estado == 'Confirmada' %}selected{% endif %}>Confirmada</option>
+            <option value="En Atención" {% if estado == 'En Atención' %}selected{% endif %}>En Atención</option>
+            <option value="Completada" {% if estado == 'Completada' %}selected{% endif %}>Completada</option>
+            <option value="Cancelada" {% if estado == 'Cancelada' %}selected{% endif %}>Cancelada</option>
+        </select>
+        {% if estado or fecha %}
+        <a href="{% url 'cita_list' %}" class="btn btn-light border px-3 py-2 rounded-3 text-nowrap" title="Limpiar filtro">
+            <i class="fas fa-times text-muted"></i>
+        </a>
+        {% endif %}
+    </form>
+
+    <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-light text-dark border px-3 py-2 fw-semibold">
+            <i class="fas fa-calendar-alt text-primary me-1"></i> {{ citas|length }} Citas en Agenda
+        </span>
+    </div>
+</div>
+
+<div class="card-enterprise">
+    <div class="card-enterprise-header">
+        <div>
+            <h5 class="mb-0">Calendario Operativo</h5>
+            <small class="text-muted">Turnos reservados para inspección de bahía y servicios</small>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table-enterprise">
+            <thead>
+                <tr>
+                    <th style="width: 110px;">Código</th>
+                    <th>Horario Programado</th>
+                    <th>Cliente / Titular</th>
+                    <th>Vehículo / Placa</th>
+                    <th>Motivo de Visita</th>
+                    <th>Estado</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in citas %}
+                <tr>
+                    <td>
+                        <span class="fw-bold font-monospace text-primary fs-6">{{ c.codigo }}</span>
+                    </td>
+                    <td>
+                        <div class="fw-bold text-dark">{{ c.fecha_cita|date:"d/m/Y" }}</div>
+                        <small class="text-muted"><i class="far fa-clock me-1 text-primary"></i>{{ c.hora_cita|time:"H:i" }} hrs</small>
+                    </td>
+                    <td>
+                        <div class="fw-bold text-dark">{{ c.cliente.nombre_completo }}</div>
+                        <small class="text-muted"><i class="fas fa-phone-alt me-1 text-success"></i>{{ c.cliente.telefono|default:"S/N" }}</small>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="plate-badge">
+                                <span class="plate-country">PE</span>
+                                <span class="plate-number">{{ c.vehiculo.placa }}</span>
+                            </span>
+                            <small class="text-muted d-none d-md-inline">{{ c.vehiculo.marca }} {{ c.vehiculo.modelo }}</small>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="text-truncate small text-secondary" style="max-width: 250px;" title="{{ c.motivo }}">
+                            {{ c.motivo }}
+                        </div>
+                    </td>
+                    <td>
+                        {% if c.estado == 'Confirmada' %}
+                            <span class="badge-status badge-status-progress">Confirmada</span>
+                        {% elif c.estado == 'En Atención' %}
+                            <span class="badge-status badge-status-diagnostico">En Atención</span>
+                        {% elif c.estado == 'Completada' %}
+                            <span class="badge-status badge-status-completed">Completada</span>
+                        {% elif c.estado == 'Pendiente' %}
+                            <span class="badge-status badge-status-pending">Pendiente</span>
+                        {% else %}
+                            <span class="badge-status badge-status-cancelled">Cancelada</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <div class="d-inline-flex align-items-center gap-1">
+                            <a href="{% url 'orden_create' %}?cita_id={{ c.pk }}" class="btn-action-ghost" title="Convertir a Orden de Trabajo">
+                                <i class="fas fa-file-invoice text-success"></i>
+                            </a>
+                            <a href="{% url 'cita_update' c.pk %}" class="btn-action-ghost" title="Modificar Cita">
+                                <i class="fas fa-pencil-alt text-secondary"></i>
+                            </a>
+                            <a href="{% url 'cita_delete' c.pk %}" class="btn-action-ghost delete-btn" title="Cancelar Cita" onclick="return confirmDelete('¿Está seguro de cancelar esta cita?');">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <div class="py-4">
+                            <i class="fas fa-calendar-times fa-3x mb-3 text-secondary opacity-50"></i>
+                            <h6 class="fw-bold text-dark">No hay citas en la fecha seleccionada</h6>
+                            <p class="small text-muted mb-3">Las bahías se encuentran disponibles para asignación.</p>
+                            <a href="{% url 'cita_create' %}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">
+                                <i class="fas fa-plus me-1"></i> Agendar Nueva Cita
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="table-footer-pagination">
+        <div>
+            Mostrando <strong>{{ citas|length }}</strong> de <strong>{{ citas|length }}</strong> citas en agenda
+        </div>
+        <div class="d-flex align-items-center gap-1">
+            <button class="btn btn-sm btn-light border px-3 rounded-3 text-muted disabled">
+                <i class="fas fa-chevron-left me-1"></i> Anterior
+            </button>
+            <button class="btn btn-sm btn-dark px-3 rounded-3 fw-bold">1</button>
+            <button class="btn btn-sm btn-light border px-3 rounded-3 text-muted disabled">
+                Siguiente <i class="fas fa-chevron-right ms-1"></i>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

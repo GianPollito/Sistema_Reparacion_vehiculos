@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Diagnósticos Técnicos de Fallas | {{ APP_NAME }}{% endblock %}
+
+{% block breadcrumb %}
+    <span class="text-muted">Operaciones</span> / <span class="crumb-current">Diagnósticos Técnicos</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-corporate">
+    <div>
+        <h3>Diagnósticos Técnicos &amp; Fallas</h3>
+        <p>Evaluación computarizada, detección de averías electrónicas y clasificación por criticidad técnica.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="{% url 'orden_create' %}" class="btn btn-outline-dark fw-bold btn-sm rounded-3 px-3 py-2">
+            <i class="fas fa-clipboard-list me-1 text-primary"></i> Orden de Trabajo
+        </a>
+        <a href="{% url 'diagnostico_create' %}" class="btn-topbar-cta">
+            <i class="fas fa-stethoscope"></i>
+            <span>Nuevo Diagnóstico</span>
+        </a>
+    </div>
+</div>
+
+<div class="filter-toolbar-enterprise d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <form method="GET" class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 760px;" data-auto-filter>
+        <div class="topbar-search-box flex-grow-1" style="background: #f8fafc;">
+            <i class="fas fa-search text-muted"></i>
+            <input type="text" name="search" value="{{ search }}" placeholder="Buscar placa o técnico…" autocomplete="off">
+        </div>
+        <select name="gravedad" class="form-select border rounded-3 text-dark fw-semibold" style="width: auto; min-width: 190px;">
+            <option value="">Todas las Severidades</option>
+            <option value="Baja" {% if gravedad == 'Baja' %}selected{% endif %}>Baja (Preventivo)</option>
+            <option value="Media" {% if gravedad == 'Media' %}selected{% endif %}>Media (Moderada)</option>
+            <option value="Alta" {% if gravedad == 'Alta' %}selected{% endif %}>Alta (Urgente)</option>
+            <option value="Crítica" {% if gravedad == 'Crítica' %}selected{% endif %}>Crítica (Riesgo)</option>
+        </select>
+        {% if gravedad or search %}
+        <a href="{% url 'diagnostico_list' %}" class="btn btn-light border px-3 py-2 rounded-3 text-nowrap" title="Limpiar filtro">
+            <i class="fas fa-times text-muted"></i>
+        </a>
+        {% endif %}
+    </form>
+
+    <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-light text-dark border px-3 py-2 fw-semibold">
+            <i class="fas fa-stethoscope text-primary me-1"></i> {{ diagnosticos|length }} Diagnósticos Emitidos
+        </span>
+    </div>
+</div>
+
+<div class="row g-4">
+    {% for d in diagnosticos %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card-enterprise h-100 p-4 d-flex flex-column border-top border-3 {% if d.gravedad == 'Crítica' %}border-danger{% elif d.gravedad == 'Alta' %}border-warning{% elif d.gravedad == 'Media' %}border-primary{% else %}border-success{% endif %}">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="plate-badge">
+                    <span class="plate-country">PE</span>
+                    <span class="plate-number">{{ d.vehiculo.placa }}</span>
+                </span>
+                {% if d.gravedad == 'Crítica' %}
+                    <span class="badge-status badge-status-waiting">Crítica</span>
+                {% elif d.gravedad == 'Alta' %}
+                    <span class="badge-status badge-status-pending">Alta</span>
+                {% elif d.gravedad == 'Media' %}
+                    <span class="badge-status badge-status-progress">Media</span>
+                {% else %}
+                    <span class="badge-status badge-status-completed">Baja</span>
+                {% endif %}
+            </div>
+
+            <h6 class="fw-bold text-dark mb-0 mt-2">{{ d.vehiculo.marca }} {{ d.vehiculo.modelo }} ({{ d.vehiculo.anio }})</h6>
+            <small class="text-muted mb-3"><i class="far fa-calendar me-1"></i> {{ d.fecha_diagnostico|date:"d/m/Y H:i" }}</small>
+
+            <div class="mb-2">
+                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.05em;">FALLA REPORTADA:</small>
+                <p class="small text-dark mb-0">{{ d.descripcion_falla }}</p>
+            </div>
+
+            <div class="mb-2 p-2 bg-light rounded-3 border">
+                <small class="text-primary text-uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.05em;">DIAGNÓSTICO TÉCNICO:</small>
+                <p class="small text-dark mb-0 fw-semibold">{{ d.diagnostico_tecnico }}</p>
+            </div>
+
+            {% if d.recomendaciones %}
+            <div class="mb-3">
+                <small class="text-success text-uppercase fw-bold" style="font-size: 0.68rem; letter-spacing: 0.05em;">PLAN DE ACCIÓN RECOMENDADO:</small>
+                <p class="small text-secondary mb-0">{{ d.recomendaciones }}</p>
+            </div>
+            {% endif %}
+
+            <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-muted d-block" style="font-size: 0.72rem;">Especialista:</small>
+                    <span class="small fw-semibold text-dark">{{ d.mecanico.nombre_completo }}</span>
+                </div>
+                <div class="d-inline-flex align-items-center gap-1">
+                    {% if d.orden %}
+                    <a href="{% url 'orden_detail' d.orden.pk %}" class="btn-action-ghost" title="Ver Orden Asociada">
+                        <i class="fas fa-file-invoice text-primary"></i>
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'diagnostico_update' d.pk %}" class="btn-action-ghost" title="Editar">
+                        <i class="fas fa-pencil-alt text-secondary"></i>
+                    </a>
+                    <a href="{% url 'diagnostico_delete' d.pk %}" class="btn-action-ghost delete-btn" title="Eliminar" onclick="return confirmDelete('¿Está seguro de eliminar este diagnóstico?');">
+                        <i class="fas fa-trash-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="card-enterprise text-center py-5 text-muted">
+            <div class="py-4">
+                <i class="fas fa-stethoscope fa-3x mb-3 text-secondary opacity-50"></i>
+                <h6 class="fw-bold text-dark">No se encontraron diagnósticos técnicos</h6>
+                <p class="small text-muted mb-3">No hay registros con los filtros de severidad seleccionados.</p>
+                <a href="{% url 'diagnostico_create' %}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">
+                    <i class="fas fa-plus me-1"></i> Registrar Diagnóstico
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

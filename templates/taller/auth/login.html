@@ -1,0 +1,149 @@
+{% extends 'base_auth.html' %}
+{% load static %}
+
+{% block title %}Acceso al Sistema | {{ APP_NAME }}{% endblock %}
+
+{% block content %}
+<div class="auth-grid">
+
+    <aside class="auth-brand-panel">
+        <a href="{% url 'login' %}" class="auth-brand">
+            <span class="brand-emblem"><i class="fas fa-wrench"></i></span>
+            <span class="brand-copy">
+                <h2>MOTOR EXPRESS</h2>
+                <span>Workshop Suite · 2026</span>
+            </span>
+        </a>
+
+        <div class="auth-brand-copy">
+            <span class="auth-kicker"><i class="fas fa-bolt"></i> Plataforma integral de taller</span>
+            <h1>El taller completo,<br><span class="grad">en tiempo real.</span></h1>
+            <p>
+                Recepción, órdenes de trabajo, diagnósticos, inventario y facturación
+                en una sola plataforma diseñada para talleres automotrices modernos.
+            </p>
+            <ul class="auth-features">
+                <li><i class="fas fa-circle-check"></i> Control de bahías en vivo</li>
+                <li><i class="fas fa-circle-check"></i> Órdenes y diagnósticos OBD-II</li>
+                <li><i class="fas fa-circle-check"></i> Inventario con alertas de stock</li>
+                <li><i class="fas fa-circle-check"></i> Caja, boletas y reportes</li>
+            </ul>
+        </div>
+
+        <div class="auth-car-card">
+            <img src="{% static 'img/banners/hero-car.svg' %}" alt="Ilustración de vehículo Motor Express">
+        </div>
+
+        <div class="auth-brand-footer">
+            <span>© 2026 Motor Express Automotive Corp.</span>
+            <span class="foot-status">Servidores operativos</span>
+        </div>
+    </aside>
+
+    <main class="auth-form-panel">
+        <div class="auth-form-wrap">
+
+            <div class="d-flex d-lg-none align-items-center gap-2 mb-4">
+                <span class="brand-emblem"><i class="fas fa-wrench"></i></span>
+                <div>
+                    <div class="fw-bold" style="font-size:.95rem;letter-spacing:-.02em;color:var(--ink-900);">MOTOR EXPRESS</div>
+                    <div class="text-uppercase fw-bold" style="font-size:.55rem;letter-spacing:.18em;color:var(--brand-600);">Workshop Suite</div>
+                </div>
+            </div>
+
+            <div class="auth-form-head">
+                <h2>Bienvenido de nuevo</h2>
+                <p>Ingresa tus credenciales corporativas para continuar.</p>
+            </div>
+
+            <form method="POST" action="" autocomplete="off" novalidate>
+                {% csrf_token %}
+
+                <div>
+                    <label class="form-label" for="inputUser">Usuario o correo corporativo</label>
+                    <div class="auth-input-wrap">
+                        <i class="fas fa-user auth-input-icon"></i>
+                        <input type="text" name="username" id="inputUser" class="form-control"
+                               placeholder="admin@motorexpress.pe" required autofocus>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label" for="inputPass">Contraseña de acceso</label>
+                    <div class="auth-input-wrap">
+                        <i class="fas fa-lock auth-input-icon"></i>
+                        <input type="password" name="password" id="inputPass" class="form-control"
+                               placeholder="••••••••" required>
+                        <button type="button" class="auth-eye" onclick="togglePassword()" aria-label="Mostrar u ocultar contraseña">
+                            <i class="far fa-eye" id="passEyeIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-cta-accent auth-submit">
+                    <i class="fas fa-arrow-right-to-bracket"></i>
+                    Ingresar al sistema
+                </button>
+            </form>
+
+            <div class="auth-divider">Acceso rápido de demostración</div>
+
+            <div class="auth-demo-list">
+                <button type="button" class="auth-demo-option" onclick="setDemo('admin@motorexpress.pe', 'admin123')">
+                    <span class="auth-demo-icon" style="background:#eff6ff;color:#2563eb;"><i class="fas fa-user-shield"></i></span>
+                    <span class="auth-demo-copy">
+                        <span class="d-name">Administrador General</span>
+                        <span class="d-mail">admin@motorexpress.pe · admin123</span>
+                    </span>
+                    <span class="auth-demo-tag" style="background:#eff6ff;color:#1d4ed8;">Admin</span>
+                </button>
+
+                <button type="button" class="auth-demo-option" onclick="setDemo('carlos@motorexpress.pe', 'carlos123')">
+                    <span class="auth-demo-icon" style="background:#fff1f2;color:#e11d48;"><i class="fas fa-screwdriver-wrench"></i></span>
+                    <span class="auth-demo-copy">
+                        <span class="d-name">Jefe Técnico de Taller</span>
+                        <span class="d-mail">carlos@motorexpress.pe · carlos123</span>
+                    </span>
+                    <span class="auth-demo-tag" style="background:#fff1f2;color:#be123c;">Técnico</span>
+                </button>
+
+                <button type="button" class="auth-demo-option" onclick="setDemo('valeria@motorexpress.pe', 'valeria123')">
+                    <span class="auth-demo-icon" style="background:#ecfdf5;color:#059669;"><i class="fas fa-cash-register"></i></span>
+                    <span class="auth-demo-copy">
+                        <span class="d-name">Recepción &amp; Facturación</span>
+                        <span class="d-mail">valeria@motorexpress.pe · valeria123</span>
+                    </span>
+                    <span class="auth-demo-tag" style="background:#ecfdf5;color:#047857;">Caja</span>
+                </button>
+            </div>
+
+            <div class="auth-form-foot">
+                ¿Requiere registrar un nuevo colaborador?
+                <a href="{% url 'register' %}">Crear cuenta de personal <i class="fas fa-arrow-right ms-1" style="font-size:.65rem;"></i></a>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function setDemo(user, pass) {
+    const inputUser = document.getElementById('inputUser');
+    const inputPass = document.getElementById('inputPass');
+    inputUser.value = user;
+    inputPass.value = pass;
+    inputUser.dispatchEvent(new Event('input', { bubbles: true }));
+    inputPass.dispatchEvent(new Event('input', { bubbles: true }));
+    inputPass.focus();
+}
+
+function togglePassword() {
+    const input = document.getElementById('inputPass');
+    const icon = document.getElementById('passEyeIcon');
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    icon.className = show ? 'far fa-eye-slash' : 'far fa-eye';
+}
+</script>
+{% endblock %}

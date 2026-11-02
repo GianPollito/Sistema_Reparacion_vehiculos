@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+
+{% block title %}Órdenes de Trabajo | {{ APP_NAME }}{% endblock %}
+
+{% block breadcrumb %}
+    <span class="text-muted">Operaciones</span> / <span class="crumb-current">Órdenes de Trabajo</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header-corporate">
+    <div>
+        <h3>Órdenes de Trabajo</h3>
+        <p>Control de recepciones técnicas, diagnóstico de fallas, asignación de bahías y liquidación.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="{% url 'cita_create' %}" class="btn-secondary-action">
+            <i class="fas fa-calendar-plus text-primary"></i> Agendar Cita
+        </a>
+        <a href="{% url 'orden_create' %}" class="btn-primary-action">
+            <i class="fas fa-plus-circle"></i> Nueva Orden
+        </a>
+    </div>
+</div>
+
+<div class="row g-3 g-xl-4 mb-4 kpi-row">
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-widget">
+            <div class="stat-header">
+                <span class="stat-label">Total Órdenes</span>
+                <div class="stat-icon-box bg-primary-subtle text-primary">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+            </div>
+            <div class="stat-number">{{ total_ordenes }}</div>
+            <div class="stat-footer">
+                <span class="stat-badge stat-badge-blue">Padrón histórico</span>
+                <span>Registros de taller</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-widget">
+            <div class="stat-header">
+                <span class="stat-label">En Servicio</span>
+                <div class="stat-icon-box bg-info-subtle text-info">
+                    <i class="fas fa-tools"></i>
+                </div>
+            </div>
+            <div class="stat-number">
+                {{ ordenes_en_servicio }}
+            </div>
+            <div class="stat-footer">
+                <span class="stat-badge stat-badge-amber">En bahía</span>
+                <span>Intervenciones activas</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-widget">
+            <div class="stat-header">
+                <span class="stat-label">Listas para Entrega</span>
+                <div class="stat-icon-box bg-success-subtle text-success">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+            </div>
+            <div class="stat-number">
+                {{ ordenes_listas_entrega }}
+            </div>
+            <div class="stat-footer">
+                <span class="stat-badge stat-badge-green">Control de calidad</span>
+                <span>Completadas</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-widget">
+            <div class="stat-header">
+                <span class="stat-label">Cumplimiento SLA</span>
+                <div class="stat-icon-box" style="background: #f3e8ff; color: #8b5cf6;">
+                    <i class="fas fa-bolt"></i>
+                </div>
+            </div>
+            <div class="stat-number">98.4%</div>
+            <div class="stat-footer">
+                <span class="stat-badge stat-badge-purple">Eficiencia</span>
+                <span>Tiempo de entrega</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card-table-unified">
+    <div class="card-table-toolbar">
+        <div class="d-flex align-items-center gap-2">
+            <strong class="text-dark small text-uppercase fw-bold" style="letter-spacing: 0.05em;">
+                <i class="fas fa-clipboard-list text-primary me-1"></i> Registro de Bahías
+            </strong>
+            <span class="badge bg-light text-muted border font-monospace ms-2">{{ ordenes|length }} Órdenes</span>
+        </div>
+
+        <form method="GET" class="d-flex align-items-center gap-2 flex-wrap" data-auto-filter>
+            <div class="table-search-input-wrap">
+                <i class="fas fa-search text-muted small"></i>
+                <input type="text" name="search" value="{{ search }}" placeholder="Buscar N° orden o placa…" autocomplete="off">
+            </div>
+            <select name="estado" class="form-select form-select-sm border rounded-3 text-dark fw-semibold" style="width: auto; min-width: 172px;">
+                <option value="">Todos los Estados</option>
+                <option value="Pendiente" {% if estado == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+                <option value="En Diagnóstico" {% if estado == 'En Diagnóstico' %}selected{% endif %}>En Diagnóstico</option>
+                <option value="En Proceso" {% if estado == 'En Proceso' %}selected{% endif %}>En Proceso</option>
+                <option value="Esperando Repuestos" {% if estado == 'Esperando Repuestos' %}selected{% endif %}>Esperando Repuestos</option>
+                <option value="Finalizado" {% if estado == 'Finalizado' %}selected{% endif %}>Finalizado</option>
+                <option value="Entregado" {% if estado == 'Entregado' %}selected{% endif %}>Entregado</option>
+                <option value="Cancelado" {% if estado == 'Cancelado' %}selected{% endif %}>Cancelado</option>
+            </select>
+            {% if estado or search %}
+            <a href="{% url 'orden_list' %}" class="btn btn-sm btn-light border" title="Limpiar">
+                <i class="fas fa-times text-muted"></i>
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table-enterprise">
+            <thead>
+                <tr>
+                    <th style="width: 120px;">N° Orden</th>
+                    <th>Vehículo / Placa</th>
+                    <th>Titular / Cliente</th>
+                    <th>Técnico Asignado</th>
+                    <th>Recepción</th>
+                    <th>Estado Operativo</th>
+                    <th>Liquidación</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for o in ordenes %}
+                <tr>
+                    <td>
+                        <a href="{% url 'orden_detail' o.pk %}" class="fw-bold font-monospace text-primary text-decoration-none">
+                            {{ o.numero_orden }}
+                        </a>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="plate-badge">
+                                <span class="plate-country">PE</span>
+                                <span class="plate-number">{{ o.vehiculo.placa }}</span>
+                            </span>
+                            <small class="text-muted d-none d-md-inline">{{ o.vehiculo.marca }} {{ o.vehiculo.modelo }}</small>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="fw-bold text-dark">{{ o.cliente.nombre_completo }}</div>
+                        <small class="text-muted"><i class="fas fa-phone-alt me-1 text-success"></i>{{ o.cliente.telefono|default:"S/N" }}</small>
+                    </td>
+                    <td>
+                        {% if o.mecanico %}
+                            <div class="fw-semibold text-dark small">{{ o.mecanico.nombre_completo }}</div>
+                            <small class="text-muted" style="font-size: 0.72rem;">{{ o.mecanico.especialidad }}</small>
+                        {% else %}
+                            <span class="badge bg-light text-muted border">Sin Asignar</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="small fw-semibold text-dark">{{ o.fecha_ingreso|date:"d/m/Y" }}</div>
+                        <small class="text-muted">{{ o.fecha_ingreso|time:"H:i" }} hrs</small>
+                    </td>
+                    <td>
+                        {% if o.estado == 'En Proceso' %}
+                            <span class="badge-status badge-status-progress">En Proceso</span>
+                        {% elif o.estado == 'En Diagnóstico' %}
+                            <span class="badge-status badge-status-diagnostico">En Diagnóstico</span>
+                        {% elif o.estado == 'Pendiente' %}
+                            <span class="badge-status badge-status-pending">Pendiente</span>
+                        {% elif o.estado == 'Esperando Repuestos' %}
+                            <span class="badge-status badge-status-waiting">Repuestos</span>
+                        {% elif o.estado == 'Finalizado' %}
+                            <span class="badge-status badge-status-completed">Finalizado</span>
+                        {% elif o.estado == 'Entregado' %}
+                            <span class="badge-status badge-status-delivered">Entregado</span>
+                        {% else %}
+                            <span class="badge-status badge-status-cancelled">Cancelado</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="fw-bold text-dark">S/ {{ o.costo_total|floatformat:2 }}</div>
+                        {% if o.saldo_pendiente > 0 %}
+                            <span class="badge bg-danger-subtle text-danger" style="font-size: 0.7rem;">Resta: S/ {{ o.saldo_pendiente|floatformat:2 }}</span>
+                        {% else %}
+                            <span class="badge bg-success-subtle text-success" style="font-size: 0.7rem;">Liquidado</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <div class="d-inline-flex align-items-center gap-1">
+                            <a href="{% url 'orden_detail' o.pk %}" class="btn-action-ghost view-btn" title="Gestionar Ficha">
+                                <i class="fas fa-sliders-h text-primary"></i>
+                            </a>
+                            <a href="{% url 'orden_imprimir' o.pk %}" target="_blank" class="btn-action-ghost" title="Imprimir">
+                                <i class="fas fa-print text-secondary"></i>
+                            </a>
+                            <a href="{% url 'orden_update' o.pk %}" class="btn-action-ghost edit-btn" title="Editar">
+                                <i class="fas fa-pencil-alt text-warning"></i>
+                            </a>
+                            <a href="{% url 'orden_delete' o.pk %}" class="btn-action-ghost delete-btn" onclick="return confirmDelete('¿Confirma anular esta orden?');" title="Eliminar">
+                                <i class="fas fa-trash-alt text-danger"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        <div class="py-4">
+                            <i class="fas fa-clipboard-check fa-2x mb-2 text-secondary opacity-50"></i>
+                            <h6 class="fw-bold text-dark">No se encontraron órdenes registradas</h6>
+                            <p class="small text-muted mb-3">No hay órdenes con los filtros aplicados.</p>
+                            <a href="{% url 'orden_create' %}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">
+                                <i class="fas fa-plus me-1"></i> Aperturar Orden de Trabajo
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="table-footer-pagination">
+        <div>
+            Mostrando <strong>{{ ordenes|length }}</strong> de <strong>{{ ordenes|length }}</strong> órdenes registradas
+        </div>
+        <div class="d-flex align-items-center gap-1">
+            <button class="btn btn-sm btn-light border px-2 py-1 rounded-2 text-muted disabled">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <span class="px-2 py-1 small fw-bold text-dark">1</span>
+            <button class="btn btn-sm btn-light border px-2 py-1 rounded-2 text-muted disabled">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

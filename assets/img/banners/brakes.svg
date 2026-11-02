@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240" width="100%" height="100%">
+  <defs>
+    <linearGradient id="brkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#311013" />
+      <stop offset="100%" stop-color="#111827" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="240" fill="url(#brkGrad)" />
+  <g transform="translate(140, 30)">
+    <!-- Ventilated Brake Disc -->
+    <circle cx="60" cy="60" r="58" fill="#475569" stroke="#94a3b8" stroke-width="4" />
+    <circle cx="60" cy="60" r="42" fill="#1e293b" />
+    <!-- Ventilation slots -->
+    <circle cx="60" cy="30" r="3" fill="#ffffff" />
+    <circle cx="60" cy="90" r="3" fill="#ffffff" />
+    <circle cx="30" cy="60" r="3" fill="#ffffff" />
+    <circle cx="90" cy="60" r="3" fill="#ffffff" />
+    <circle cx="39" cy="39" r="3" fill="#ffffff" />
+    <circle cx="81" cy="81" r="3" fill="#ffffff" />
+    <circle cx="39" cy="81" r="3" fill="#ffffff" />
+    <circle cx="81" cy="39" r="3" fill="#ffffff" />
+    <circle cx="60" cy="60" r="20" fill="#0f172a" stroke="#cbd5e1" stroke-width="3" />
+    <!-- Brake Caliper (Rojo Brembo) -->
+    <path d="M-5,10 C15,-5 50,-5 70,5 L65,30 C50,22 25,22 10,32 Z" fill="#e63946" stroke="#b91c1c" stroke-width="2" />
+    <rect x="-8" y="20" width="22" height="45" rx="5" fill="#e63946" stroke="#b91c1c" stroke-width="2" />
+    <circle cx="3" cy="35" r="4" fill="#ffffff" />
+    <circle cx="3" cy="52" r="4" fill="#ffffff" />
+  </g>
+  <text x="200" y="210" text-anchor="middle" font-family="'Segoe UI', sans-serif" font-weight="700" font-size="16" fill="#f8fafc">SISTEMA DE FRENOS ABS</text>
+</svg>

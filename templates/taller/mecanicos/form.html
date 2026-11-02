@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }} | {{ APP_NAME }}{% endblock %}
+
+{% block breadcrumb %}
+    <a href="{% url 'mecanico_list' %}" class="text-decoration-none text-muted">Técnicos</a> / <span class="crumb-current">{{ titulo }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-enterprise">
+            <div class="card-enterprise-header">
+                <div>
+                    <h5 class="mb-0"><i class="fas fa-users-cog text-primary me-2"></i> {{ titulo }}</h5>
+                    <small class="text-muted">Registro de especialista mecánico y acreditación de especialidad</small>
+                </div>
+                <a href="{% url 'mecanico_list' %}" class="btn btn-light border btn-sm fw-semibold rounded-3 px-3">
+                    <i class="fas fa-arrow-left me-1"></i> Volver
+                </a>
+            </div>
+
+            <div class="p-4">
+                <form method="POST" action="">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-muted text-uppercase">DNI *</label>
+                            {{ form.dni }}
+                            {% if form.dni.errors %}<div class="text-danger small mt-1">{{ form.dni.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Nombre Completo *</label>
+                            {{ form.nombre_completo }}
+                            {% if form.nombre_completo.errors %}<div class="text-danger small mt-1">{{ form.nombre_completo.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Especialidad Principal *</label>
+                            {{ form.especialidad }}
+                            {% if form.especialidad.errors %}<div class="text-danger small mt-1">{{ form.especialidad.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Teléfono / Celular</label>
+                            {{ form.telefono }}
+                            {% if form.telefono.errors %}<div class="text-danger small mt-1">{{ form.telefono.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Estado Operativo</label>
+                            {{ form.estado }}
+                            {% if form.estado.errors %}<div class="text-danger small mt-1">{{ form.estado.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-muted text-uppercase">Correo Electrónico</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                        <a href="{% url 'mecanico_list' %}" class="btn btn-light border fw-semibold rounded-3 px-4">Cancelar</a>
+                        <button type="submit" class="btn-topbar-cta">
+                            <i class="fas fa-save"></i> Guardar Técnico
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
